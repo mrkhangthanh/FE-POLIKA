@@ -1,0 +1,37 @@
+import React from 'react'
+import Register from './pages/Register'
+// import Slide from './share/components/Slide'
+// import Servies from './share/components/Servies'
+// import InfoOder from './share/components/InfoOder'
+// import HeaderListOrder from './share/components/HeaderListOrder'
+// import BanerCenter from './share/components/BanerCenter'
+// import Product from './share/components/Product'
+// import News from './share/components/News'
+// import Footer from './share/components/Layout/Footer'
+// import Header from './share/components/Layout/Header'
+import Home from './pages/Home'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Login from './pages/Login'
+import ForgotPassword from './pages/ForgotPassword'
+import ProductDetail from './pages/ProductDetail'
+import ShoppingCart from './pages/Cart'
+
+const App = () => {
+  return (
+   <BrowserRouter>
+      {/* <Layout> */}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/dang-ky" element={<Register />} />
+          <Route path="/login"  element={<Login/>}/>
+          <Route path="/forgot-password" element={<ForgotPassword/>} />
+          <Route path='/product-details/' element= {<ProductDetail/>} />
+          <Route path='/cart' element= {<ShoppingCart/>} />
+          <Route path="/Don-Hang/:id"  />
+        </Routes>
+      {/* </Layout> */}
+    </BrowserRouter>  
+  )
+}
+
+export default App
