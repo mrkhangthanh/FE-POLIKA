@@ -4,6 +4,8 @@
 /node_modules
 /.pnp
 .pnp.js
+/BE-POLIKA
+/BE-POLIKA-V2
 
 # testing
 /coverage
