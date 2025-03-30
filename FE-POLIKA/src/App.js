@@ -17,6 +17,8 @@ import ProductDetail from './pages/ProductDetail'
 import ShoppingCart from './pages/Cart'
 import Dashboard from './pages/Dashboard/Dashboard'
 import GetAllUserDashBoard from './pages/Dashboard/getAllUser'
+import UserDetail from './pages/Dashboard/userDetail'
+import LoginDashboard from './pages/Dashboard/loginDashboard'
 
 
 
@@ -29,11 +31,13 @@ const App = () => {
           <Route path="/dang-ky" element={<Register />} />
           <Route path="/login"  element={<Login/>}/>
           <Route path="/users" element={<GetAllUserDashBoard/>} />
+          <Route path="/admin-login" element={<LoginDashboard/>} />
       
           <Route path="/forgot-password" element={<ForgotPassword/>} />
           <Route path='/product-details/' element= {<ProductDetail/>} />
           <Route path='/cart' element= {<ShoppingCart/>} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/user/:userId" element={ <UserDetail/>} />
           <Route path="/Don-Hang/:id"  />
         </Routes>
       {/* </Layout> */}

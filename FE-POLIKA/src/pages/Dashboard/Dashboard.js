@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
 import {
@@ -31,47 +31,80 @@ import {
   FaSignOutAlt,
   FaChevronDown,
 } from 'react-icons/fa';
+import { getAllUsers, deleteUser, getStats } from '../../services/Api';
 import './Dashboard.css';
 
-// Đăng ký các thành phần cần thiết cho Chart.js
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user')) || { name: 'Người dùng' };
   const [activeMenu, setActiveMenu] = useState('dashboard');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Trạng thái toggle sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState({
-    'quan-ly-tai-khoan': false,
-    'quan-ly-san-pham-dich-vu': false,
-    'quan-ly-bai-viet': false,
+    'quan-ly-tai-khoan': true,
+    'quan-ly-san-pham-dich-vu': true,
+    'quan-ly-bai-viet': true,
     'quan-ly-don-hang': false,
     'quan-ly-nguoi-dung': false,
     'thong-ke-va-bao-cao': false,
     'quan-ly-giao-dich': false,
     'cai-dat': false,
-  }); // Trạng thái mở/đóng cho từng nhóm
+  });
+  const [users, setUsers] = useState([]);
+  const [stats, setStats] = useState({ newUsers: [], completedOrders: [] });
+  const [error, setError] = useState('');
 
-  // Dữ liệu giả (mock data)
-  const mockUsers = [
-    { id: 'USR-0001', name: 'Nguyễn Văn A', role: 'customer', email: 'vana@example.com', status: 'Hoạt động' },
-    { id: 'USR-0002', name: 'Trần Thị B', role: 'technician', email: 'thib@example.com', status: 'Hoạt động' },
-    { id: 'USR-0003', name: 'Lê Văn C', role: 'agent', email: 'vanc@example.com', status: 'Ngừng hoạt động' },
-  ];
+  useEffect(() => {
+    const role = localStorage.getItem('role');
+    if (role !== 'admin') {
+      alert('Access denied. Only admins can access the Dashboard.');
+      navigate('/admin-login');
+      return;
+    }
+
+    const fetchUsers = async () => {
+      try {
+        const response = await getAllUsers();
+        setUsers(response.users || []);
+      } catch (err) {
+        setError('Failed to fetch users: ' + (err.error || err.message));
+      }
+    };
+
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Không tìm thấy token. Vui lòng đăng nhập lại.');
+        }
+        const response = await getStats();
+        setStats({
+          newUsers: response.data.newUsers || [],
+          completedOrders: response.data.completedOrders || [],
+        });
+      } catch (err) {
+        setError((prev) => prev + '\nFailed to fetch stats: ' + (err.message || 'Không xác định'));
+      }
+    };
+
+    fetchUsers();
+    fetchStats();
+  }, [navigate]);
 
   const chartData = {
     labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'],
     datasets: [
       {
         label: 'Người dùng mới',
-        data: [65, 59, 80, 81, 56, 55],
+        data: stats.newUsers.length > 0 ? stats.newUsers : [65, 59, 80, 81, 56, 55],
         fill: false,
         borderColor: '#ff4500',
         tension: 0.1,
       },
       {
         label: 'Đơn hàng hoàn thành',
-        data: [28, 48, 40, 19, 86, 27],
+        data: stats.completedOrders.length > 0 ? stats.completedOrders : [28, 48, 40, 19, 86, 27],
         fill: false,
         borderColor: '#00c4b4',
         tension: 0.1,
@@ -90,7 +123,20 @@ const Dashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/login');
+    localStorage.removeItem('role');
+    navigate('/admin-login');
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await deleteUser(userId);
+        setUsers(users.filter((user) => user._id !== userId));
+        alert('User deleted successfully.');
+      } catch (err) {
+        setError('Failed to delete user: ' + (err.error || err.message));
+      }
+    }
   };
 
   const toggleSidebar = () => {
@@ -102,42 +148,36 @@ const Dashboard = () => {
       ...prev,
       [group]: !prev[group],
     }));
-    console.log(`Toggled group: ${group}, State: ${!openGroups[group]}`); // Debug log
   };
 
   return (
     <div className="dashboard-wrapper">
-      {/* Nút toggle cho mobile */}
       <button className="toggle-sidebar" onClick={toggleSidebar}>
         {isSidebarOpen ? 'Ẩn Menu' : 'Hiện Menu'}
       </button>
 
-      {/* Sidebar */}
       <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <h2>PUTINKA</h2>
         </div>
         <ul className="sidebar-menu">
-      
           <li
             className={activeMenu === 'dashboard' ? 'active' : ''}
             onClick={() => setActiveMenu('dashboard')}
           >
             <span>
-            <FaTachometerAlt className="menu-icon" />
-            Dashboard
-             </span>
+              <FaTachometerAlt className="menu-icon" />
+              Dashboard
+            </span>
           </li>
-          
 
-          {/* Quản lý tài khoản */}
           <li className="menu-group">
             <span
               className="menu-group-title"
               onClick={() => toggleGroup('quan-ly-tai-khoan')}
               style={{ cursor: 'pointer' }}
             >
-                Quản lý tài khoản   
+              Quản lý tài khoản
               <FaChevronDown
                 className="toggle-icon"
                 style={{
@@ -177,7 +217,6 @@ const Dashboard = () => {
             </ul>
           </li>
 
-          {/* Quản lý sản phẩm/dịch vụ */}
           <li className="menu-group">
             <span
               className="menu-group-title"
@@ -224,7 +263,6 @@ const Dashboard = () => {
             </ul>
           </li>
 
-          {/* Quản lý bài viết */}
           <li className="menu-group">
             <span
               className="menu-group-title"
@@ -271,7 +309,6 @@ const Dashboard = () => {
             </ul>
           </li>
 
-          {/* Quản lý đơn hàng */}
           <li className="menu-group">
             <span
               className="menu-group-title"
@@ -336,7 +373,6 @@ const Dashboard = () => {
             </ul>
           </li>
 
-          {/* Quản lý người dùng */}
           <li className="menu-group">
             <span
               className="menu-group-title"
@@ -392,7 +428,6 @@ const Dashboard = () => {
             </ul>
           </li>
 
-          {/* Thống kê và báo cáo */}
           <li className="menu-group">
             <span
               className="menu-group-title"
@@ -448,7 +483,6 @@ const Dashboard = () => {
             </ul>
           </li>
 
-          {/* Quản lý giao dịch */}
           <li className="menu-group">
             <span
               className="menu-group-title"
@@ -495,7 +529,6 @@ const Dashboard = () => {
             </ul>
           </li>
 
-          {/* Cài đặt */}
           <li className="menu-group">
             <span
               className="menu-group-title"
@@ -543,15 +576,14 @@ const Dashboard = () => {
           </li>
 
           <li onClick={handleLogout}>
-          <span>
-            <FaSignOutAlt className="menu-icon" />
-            Đăng xuất
+            <span>
+              <FaSignOutAlt className="menu-icon" />
+              Đăng xuất
             </span>
           </li>
         </ul>
       </div>
 
-      {/* Nội dung chính */}
       <div className="main-content">
         <div className="header">
           <h2>Dashboard</h2>
@@ -560,18 +592,19 @@ const Dashboard = () => {
             <button onClick={handleLogout}>Đăng xuất</button>
           </div>
         </div>
+        {error && <p className="error">{error}</p>}
         <div className="stats">
           <div className="stat-box">
             <h3>Tổng người dùng</h3>
-            <p>14,372</p>
+            <p>{users.length}</p>
           </div>
           <div className="stat-box">
             <h3>Khách hàng</h3>
-            <p>10,500</p>
+            <p>{users.filter((u) => u.role === 'customer').length}</p>
           </div>
           <div className="stat-box">
             <h3>Thợ</h3>
-            <p>3,500</p>
+            <p>{users.filter((u) => u.role === 'technician').length}</p>
           </div>
           <div className="stat-box">
             <h3>Doanh thu</h3>
@@ -590,11 +623,11 @@ const Dashboard = () => {
         <div className="additional-stats">
           <div className="stat-box">
             <h3>Tổng khách hàng</h3>
-            <p>10,500</p>
+            <p>{users.filter((u) => u.role === 'customer').length}</p>
           </div>
           <div className="stat-box">
             <h3>Tổng thợ</h3>
-            <p>3,500</p>
+            <p>{users.filter((u) => u.role === 'technician').length}</p>
           </div>
           <div className="stat-box">
             <h3>Tổng đơn hàng</h3>
@@ -607,7 +640,7 @@ const Dashboard = () => {
         </div>
         <div className="recent-users">
           <h3>Người dùng gần đây</h3>
-          <p>Tổng người dùng: 14,372.</p>
+          <p>Tổng người dùng: {users.length}.</p>
           <table>
             <thead>
               <tr>
@@ -616,19 +649,24 @@ const Dashboard = () => {
                 <th>Vai trò</th>
                 <th>Email</th>
                 <th>Trạng thái</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {mockUsers.map((user) => (
-                <tr key={user.id}>
-                  <td>{user.id}</td>
-                  <td>{user.name}</td>
+              {users.map((user) => (
+                <tr key={user._id}>
+                  <td>{user._id}</td>
+                  <td>{user.name || 'N/A'}</td>
                   <td>{user.role}</td>
                   <td>{user.email}</td>
                   <td>
-                    <span className={user.status === 'Hoạt động' ? 'status-active' : 'status-inactive'}>
-                      {user.status}
+                    <span className={user.status === 'active' ? 'status-active' : 'status-inactive'}>
+                      {user.status === 'active' ? 'Hoạt động' : 'Ngừng hoạt động'}
                     </span>
+                  </td>
+                  <td>
+                    <button onClick={() => navigate(`/user/${user._id}`)}>View</button>
+                    <button onClick={() => handleDeleteUser(user._id)}>Delete</button>
                   </td>
                 </tr>
               ))}

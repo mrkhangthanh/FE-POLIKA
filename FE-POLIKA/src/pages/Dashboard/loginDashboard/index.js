@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../../services/Api'; // Đã sửa tên import từ Api thành Apis để đồng bộ với cấu trúc thư mục
-import { BASE_API } from '../../constants/app';
-import Header from '../../share/components/Layout/Header';
-import Footer from '../../share/components/Layout/Footer';
-import './Login.css';
+import { login } from '../../../services/Api'; // Đã sửa tên import từ Api thành Apis để đồng bộ với cấu trúc thư mục
+import { BASE_API } from '../../../constants/app';
+import Header from '../../../share/components/Layout/Header';
+import Footer from '../../../share/components/Layout/Footer';
+import './loginDashboard.css';
 
-const Login = () => {
+const LoginDashboard = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -38,24 +38,26 @@ const Login = () => {
 
     try {
       console.log('Sending login request to:', `${BASE_API}/login`);
-      console.log('Payload:', { email, password });
-      const response = await login({ email, password });
-      console.log('Login response:', response.data); // Log phản hồi từ API
+      console.log('Payload:', { identifier: email, password });
+
+      const response = await login({ identifier: email, password });
 
 
       // Xử lý phản hồi từ API
       setMessage(response.data.message || 'Đăng nhập thành công!');
-      const { accessToken, user } = response.data; // Sử dụng accessToken thay vì token
+      const { accessToken, user } = response.data;
+      console.log('Token:', accessToken);
+      console.log('User:', user);
 
 
       // Lưu token và user vào localStorage
-      localStorage.setItem('token', accessToken); // Lưu accessToken
-
+      localStorage.setItem('token', accessToken);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('role', user.role); // Lưu role để kiểm tra quyền truy cập
 
       // Kiểm tra quyền admin
-      if (user.role !== 'admin') {
+      if (!user || user.role !== 'admin') {
+
         setError('Chỉ admin mới có thể truy cập dashboard.');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -71,6 +73,8 @@ const Login = () => {
       }, 1000);
     } catch (err) {
       console.error('Error details:', err);
+      console.log('Full error response:', err.response); // Thêm dòng này để ghi lại phản hồi lỗi đầy đủ
+
       const errorMessage =
         err.response?.data?.error ||
         err.response?.data?.message ||
@@ -128,4 +132,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginDashboard;

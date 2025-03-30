@@ -18,18 +18,18 @@ const welcomeMessage = document.getElementById('welcomeMessage');
 const userWelcome = document.getElementById('userWelcome')
 const span = document.getElementsByClassName('close-register')[0];
 const span2 = document.getElementsByClassName('close-login')[0];
-btn.onClick = ()=> {
+btn.onclick = ()=> {
     myModal.style.display = "block";
 };
-span.onClick = ()=>{
+span.onclick = ()=>{
     myModal.style.display = "none";
 }
 // end form dangky modal 
 // form dangky modal 
-btnLg.onClick = ()=> {
+btnLg.onclick = ()=> {
   myModalLg.style.display = "block";
 }
-span2.onClick =()=>{
+span2.onclick =()=>{
   myModalLg.style.display = "none";
 }
 // Chuyển đổi giữa Đăng Ký và Đăng Nhập

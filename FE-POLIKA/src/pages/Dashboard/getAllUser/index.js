@@ -23,8 +23,9 @@ const GetAllUserDashBoard = () => {
     email: '',
     phone_number: '',
     role: 'customer',
+    password: '',
   });
-  const [editUserId, setEditUserId] = useState(null); // ID của user đang chỉnh sửa
+  const [editUserId, setEditUserId] = useState(null);
 
   // Kiểm tra đăng nhập và vai trò admin
   useEffect(() => {
@@ -32,7 +33,7 @@ const GetAllUserDashBoard = () => {
     const token = localStorage.getItem('token');
 
     if (!token || !user || user.role !== 'admin') {
-      navigate('/login');
+      navigate('/admin-login');
     }
   }, [navigate]);
 
@@ -41,13 +42,29 @@ const GetAllUserDashBoard = () => {
     setIsLoading(true);
     setError('');
     try {
-      const response = await getAllUsers({ params: { page } });
-      setUsers(response.data.users || []);
-      setPagination(response.data.pagination || {});
-      setCurrentPage(page);
+      const token = localStorage.getItem('token');
+      console.log('Auth Header:', token);
+
+      if (!token) {
+        throw new Error('Không tìm thấy token. Vui lòng đăng nhập lại.');
+      }
+
+      const response = await getAllUsers({
+        params: { page },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log('API Response:', response);
+
+      if (response.data.success) {
+        setUsers(response.data.users || []); // Sửa: response.data.users
+        setPagination(response.data.pagination || {});
+        setCurrentPage(page);
+      } else {
+        setError(response.data.message || 'Không thể tải danh sách người dùng.');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Không thể tải danh sách người dùng.');
       console.error('Error:', err);
+      setError(err.message || 'Không thể tải danh sách người dùng.');
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +78,7 @@ const GetAllUserDashBoard = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/login');
+    navigate('/admin-login');
   };
 
   // Xử lý chuyển trang
@@ -102,16 +119,17 @@ const GetAllUserDashBoard = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await register(newUser); // Sử dụng register thay vì fetch
+      const response = await register(newUser);
+      console.log('Add User Response:', response);
       if (response.data.success) {
-        setUsers([...users, response.data.user]); // Giả sử response trả về { success: true, user }
+        setUsers([...users, response.data.user]);
         setShowAddForm(false);
-        setNewUser({ name: '', email: '', phone_number: '', role: 'customer' });
+        setNewUser({ name: '', email: '', phone_number: '', role: 'customer', password: '' });
       } else {
         setError(response.data.message || 'Thêm user thất bại.');
       }
     } catch (err) {
-      setError('Lỗi khi thêm user: ' + err.message);
+      setError('Lỗi khi thêm user: ' + (err.message || 'Không xác định'));
       console.error('Error:', err);
     } finally {
       setIsLoading(false);
@@ -127,6 +145,7 @@ const GetAllUserDashBoard = () => {
         email: userToEdit.email,
         phone_number: userToEdit.phone_number || '',
         role: userToEdit.role,
+        password: '',
       });
       setEditUserId(userId);
       setShowAddForm(true);
@@ -139,16 +158,17 @@ const GetAllUserDashBoard = () => {
     setIsLoading(true);
     try {
       const response = await updateUser(editUserId, newUser);
+      console.log('Update User Response:', response);
       if (response.data.success) {
         setUsers(users.map((user) => (user._id === editUserId ? response.data.user : user)));
         setShowAddForm(false);
-        setNewUser({ name: '', email: '', phone_number: '', role: 'customer' });
+        setNewUser({ name: '', email: '', phone_number: '', role: 'customer', password: '' });
         setEditUserId(null);
       } else {
         setError(response.data.message || 'Cập nhật user thất bại.');
       }
     } catch (err) {
-      setError('Lỗi khi cập nhật user: ' + err.message);
+      setError('Lỗi khi cập nhật user: ' + (err.message || 'Không xác định'));
       console.error('Error:', err);
     } finally {
       setIsLoading(false);
@@ -161,13 +181,14 @@ const GetAllUserDashBoard = () => {
       setIsLoading(true);
       try {
         const response = await deleteUser(userId);
-        if (response.status === 200) {
+        console.log('Delete User Response:', response);
+        if (response.data.success) {
           setUsers(users.filter((user) => user._id !== userId));
         } else {
-          setError('Xóa user thất bại.');
+          setError(response.data.message || 'Xóa user thất bại.');
         }
       } catch (err) {
-        setError('Lỗi khi xóa user: ' + err.message);
+        setError('Lỗi khi xóa user: ' + (err.message || 'Không xác định'));
         console.error('Error:', err);
       } finally {
         setIsLoading(false);
@@ -228,8 +249,8 @@ const GetAllUserDashBoard = () => {
               onChange={(e) => setSortByDate(e.target.value)}
               style={{ padding: '5px' }}
             >
-              <option value="">Thời Gian Tạo</option>
-              <option value="earliest">Mới nhất</option>
+              <option value="">Thời Gian Tạo</option>
+              <option value="earliest">Mới nhất</option>
               <option value="latest">Lâu nhất</option>
             </select>
           </div>
@@ -239,7 +260,7 @@ const GetAllUserDashBoard = () => {
             onClick={() => {
               setShowAddForm(!showAddForm);
               setEditUserId(null);
-              setNewUser({ name: '', email: '', phone_number: '', role: 'customer' });
+              setNewUser({ name: '', email: '', phone_number: '', role: 'customer', password: '' });
             }}
             style={{ marginBottom: '10px', padding: '5px 10px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px' }}
           >
@@ -280,6 +301,16 @@ const GetAllUserDashBoard = () => {
                 <option value="admin">Admin</option>
                 <option value="agent">Agent</option>
               </select>
+              {!editUserId && (
+                <input
+                  type="password"
+                  placeholder="Mật khẩu"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                  style={{ marginRight: '10px', padding: '5px' }}
+                  required
+                />
+              )}
               <button type="submit" style={{ padding: '5px 10px', background: '#2196F3', color: '#fff', border: 'none', borderRadius: '4px' }}>
                 {editUserId ? 'Lưu' : 'Thêm'}
               </button>
@@ -287,7 +318,7 @@ const GetAllUserDashBoard = () => {
                 type="button"
                 onClick={() => {
                   setShowAddForm(false);
-                  setNewUser({ name: '', email: '', phone_number: '', role: 'customer' });
+                  setNewUser({ name: '', email: '', phone_number: '', role: 'customer', password: '' });
                   setEditUserId(null);
                 }}
                 style={{ marginLeft: '10px', padding: '5px 10px', background: '#f44336', color: '#fff', border: 'none', borderRadius: '4px' }}
@@ -309,6 +340,7 @@ const GetAllUserDashBoard = () => {
                     <th>Tên</th>
                     <th>Email</th>
                     <th>Số điện thoại</th>
+                    <th>Địa chỉ</th>
                     <th>Ngày tạo tài khoản</th>
                     <th>Vai trò</th>
                     <th>Trạng thái</th>
@@ -322,6 +354,11 @@ const GetAllUserDashBoard = () => {
                       <td>{user.name || 'N/A'}</td>
                       <td>{user.email}</td>
                       <td>{user.phone_number || 'N/A'}</td>
+                      <td>
+                        {user.address
+                          ? `${user.address.street || ''}${user.address.street ? ', ' : ''}${user.address.ward || ''}${user.address.ward ? ', ' : ''}${user.address.district || ''}${user.address.district ? ', ' : ''}${user.address.city || ''}${user.address.city ? ', ' : ''}${user.address.country || ''}`
+                          : 'N/A'}
+                      </td>
                       <td>{new Date(user.created_at).toLocaleDateString('vi-VN')}</td>
                       <td>{user.role}</td>
                       <td className={user.status === 'active' ? 'status-active' : 'status-inactive'}>
@@ -345,7 +382,6 @@ const GetAllUserDashBoard = () => {
                   ))}
                 </tbody>
               </table>
-              {/* Phân trang */}
               {pagination && (
                 <div className="pagination" style={{ marginTop: '10px' }}>
                   <button
