@@ -1,3 +1,10 @@
+.main-contentuser{
+  margin-left: 10px;
+}
+.dashboard-wrapperuser{
+  margin-left: 10px;
+  width: 100%;
+}
 .pagination {
     display: flex;
     justify-content: center;

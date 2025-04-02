@@ -13,6 +13,7 @@ const Register = () => {
   const [role, setRole] = useState('customer');
   const [error, setError] = useState('');
   const [message, setMessage] = useState(''); // Thêm thông báo thành công
+  const [isLoading, setIsLoading] = useState(false); // Thêm trạng thái loading
   const navigate = useNavigate();
 
   // Xử lý submit form
@@ -20,10 +21,35 @@ const Register = () => {
     e.preventDefault();
     setError('');
     setMessage('');
+    setIsLoading(true); // Hiển thị trạng thái loading
 
     // Kiểm tra dữ liệu cơ bản
     if (!name || !email || !password || !phoneNumber) {
       setError('Vui lòng điền đầy đủ thông tin.');
+      setIsLoading(false);
+      return;
+    }
+
+    // Kiểm tra định dạng email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Email không hợp lệ.');
+      setIsLoading(false);
+      return;
+    }
+
+    // Kiểm tra độ dài mật khẩu
+    if (password.length < 6) {
+      setError('Mật khẩu phải có ít nhất 6 ký tự.');
+      setIsLoading(false);
+      return;
+    }
+
+    // Kiểm tra định dạng số điện thoại
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phoneNumber)) {
+      setError('Số điện thoại phải có đúng 10 chữ số.');
+      setIsLoading(false);
       return;
     }
 
@@ -47,11 +73,17 @@ const Register = () => {
       setPhoneNumber('');
       setRole('customer');
 
-      // Chuyển hướng sau 2 giây (tùy chọn)
-      setTimeout(() => navigate('/dang-nhap'), 2000);
+      // Chuyển hướng sau 2 giây
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (err) {
-      setError(err.response?.data?.error || err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+      setError(
+        err.response?.data?.error || err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.'
+      );
       console.error('Error:', err);
+    } finally {
+      setIsLoading(false); // Tắt trạng thái loading
     }
   };
 
@@ -71,6 +103,7 @@ const Register = () => {
               placeholder="Nhập tên của bạn"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              disabled={isLoading}
               required
             />
           </div>
@@ -82,6 +115,7 @@ const Register = () => {
               placeholder="Nhập email của bạn"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
               required
             />
           </div>
@@ -93,6 +127,7 @@ const Register = () => {
               placeholder="Nhập mật khẩu"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
               required
             />
           </div>
@@ -104,6 +139,7 @@ const Register = () => {
               placeholder="Nhập số điện thoại"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
+              disabled={isLoading}
               required
             />
           </div>
@@ -113,6 +149,7 @@ const Register = () => {
               id="role-lg"
               value={role}
               onChange={(e) => setRole(e.target.value)}
+              disabled={isLoading}
             >
               <option value="customer">Khách hàng</option>
               <option value="technician">Thợ</option>
@@ -120,10 +157,12 @@ const Register = () => {
             </select>
           </div>
           <div className="button-lg">
-            <button type="submit">Đăng ký</button>
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? 'Đang đăng ký...' : 'Đăng ký'}
+            </button>
           </div>
           <p className="login-link-lg">
-            Đã có tài khoản? <a href="/dang-nhap">Đăng nhập</a>
+            Đã có tài khoản? <a href="/login">Đăng nhập</a>
           </p>
         </form>
       </div>

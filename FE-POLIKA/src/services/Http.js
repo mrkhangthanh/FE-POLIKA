@@ -20,18 +20,18 @@ Http.interceptors.request.use(
     }
 );
 
-Http.interceptors.response.use(
-  (response) => response.data, // Trả về response.data trực tiếp
-  (error) => {
-    console.error('API Error:', error.response?.data || error.message);
+// Http.interceptors.response.use(
+//   (response) => response.data, // Trả về response.data trực tiếp
+//   (error) => {
+//     console.error('API Error:', error.response?.data || error.message);
     // if (error.response && error.response.status === 401) {
     //   localStorage.removeItem('token');
     //   localStorage.removeItem('user');
     //   window.location.href = '/admin-login';
     //   return Promise.reject(new Error('Unauthorized. Please log in again.'));
     // }
-    return Promise.reject(error.response?.data || { message: 'Lỗi không xác định.' });
-  }
-);
+//     return Promise.reject(error.response?.data || { message: 'Lỗi không xác định.' });
+//   }
+// );
 
 export default Http;

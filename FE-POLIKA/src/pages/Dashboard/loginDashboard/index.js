@@ -7,7 +7,7 @@ import Footer from '../../../share/components/Layout/Footer';
 import './loginDashboard.css';
 
 const LoginDashboard = () => {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState(''); // 🔴 [SỬA] Đổi từ email thành identifier để hỗ trợ cả email và số điện thoại
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -18,7 +18,8 @@ const LoginDashboard = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
-    if (token && user && user.role === 'admin') {
+    const allowedRoles = ['admin', 'manager', 'content_writer', 'agent', 'technician'];
+    if (token && user && allowedRoles.includes(user.role)) {
       navigate('/dashboard');
     }
   }, [navigate]);
@@ -30,7 +31,7 @@ const LoginDashboard = () => {
     setIsLoading(true); // Bật trạng thái loading
 
     // Kiểm tra input
-    if (!email || !password) {
+    if (!identifier || !password) { // 🔴 [SỬA] Đổi email thành identifier
       setError('Vui lòng điền đầy đủ thông tin.');
       setIsLoading(false);
       return;
@@ -38,27 +39,25 @@ const LoginDashboard = () => {
 
     try {
       console.log('Sending login request to:', `${BASE_API}/login`);
-      console.log('Payload:', { identifier: email, password });
+      console.log('Payload:', { identifier, password }); // 🔴 [SỬA] Sử dụng identifier thay vì email
 
-      const response = await login({ identifier: email, password });
-
+      const response = await login({ identifier, password }); // 🔴 [SỬA] Sử dụng identifier thay vì email
 
       // Xử lý phản hồi từ API
       setMessage(response.data.message || 'Đăng nhập thành công!');
-      const { accessToken, user } = response.data;
+      const { accessToken, user } = response.data; // 🔴 [SỬA] Sử dụng accessToken thay vì token
       console.log('Token:', accessToken);
       console.log('User:', user);
 
-
       // Lưu token và user vào localStorage
-      localStorage.setItem('token', accessToken);
+      localStorage.setItem('token', accessToken); // 🔴 [SỬA] Sử dụng accessToken
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('role', user.role); // Lưu role để kiểm tra quyền truy cập
 
-      // Kiểm tra quyền admin
-      if (!user || user.role !== 'admin') {
-
-        setError('Chỉ admin mới có thể truy cập dashboard.');
+      // Kiểm tra quyền
+      const allowedRoles = ['admin', 'manager', 'content_writer', 'agent', 'technician'];
+      if (!allowedRoles.includes(user.role)) {
+        setError('Tài khoản này không được phép đăng nhập ở đây. Vui lòng sử dụng trang /login.');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('role');
@@ -89,18 +88,19 @@ const LoginDashboard = () => {
       <Header />
       <div className="login-container-lg">
         <form className="login-form-lg" onSubmit={handleLogin}>
-          <h2>Đăng nhập</h2>
+          <h2>Trang Quản Trị</h2>
           {error && <p className="error-message-lg">{error}</p>}
           {message && <p className="success-message-lg">{message}</p>}
           <div className="input-group-lg">
-            <label htmlFor="email-lg">Số Điện Thoại hoặc Email</label>
+            <label htmlFor="identifier-lg">Số Điện Thoại hoặc Email</label> 
             <input
-              type="text" // Đổi thành type="text" để hỗ trợ cả số điện thoại và email
-              id="email-lg"
+              type="text" // 🔴 [SỬA] Sử dụng type="text" để hỗ trợ cả email và số điện thoại
+              id="identifier-lg" // 🔴 [SỬA] Đổi id từ email-lg thành identifier-lg
               placeholder="Nhập SĐT hoặc Email của bạn"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={identifier} // 🔴 [SỬA] Đổi từ email thành identifier
+              onChange={(e) => setIdentifier(e.target.value)} // 🔴 [SỬA] Đổi từ setEmail thành setIdentifier
               required
+              disabled={isLoading}
             />
           </div>
           <div className="input-group-lg">
@@ -112,6 +112,7 @@ const LoginDashboard = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
           <div className="button-lg">

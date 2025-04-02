@@ -15,7 +15,7 @@ const Header = () => {
           <button id="btn_search"> <i className="fa-solid fa-magnifying-glass" />
           </button></div>
         <div className="form_login col-lg-4 col-md-4 col-sm-12 d-flex justify-content-center align-items-center">
-          <Link to='/dang-ky'><button id="myBtn" className="myBtn">Đăng Ký</button></Link>
+          <Link to='/register'><button id="myBtn" className="myBtn">Đăng Ký</button></Link>
           <p className="space">|</p>
           <Link to='/login'><button id="dangNhap" className="myBtn">Đăng Nhập</button></Link>
           <p className="space">|</p>
