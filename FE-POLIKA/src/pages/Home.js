@@ -7,6 +7,7 @@ import News from '../share/components/News';
 import HeaderListOrder from '../share/components/HeaderListOrder';
 import Header from '../share/components/Layout/Header'
 import Footer from '../share/components/Layout/Footer';
+import BottomNav from '../share/components/BottomNav';
 
 const Home = () => {
   return (
@@ -18,6 +19,7 @@ const Home = () => {
       <BanerCenter />
       <Product />
       <News />
+      <BottomNav/>
       <Footer/>
     </>
   );

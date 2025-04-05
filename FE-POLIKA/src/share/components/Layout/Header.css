@@ -1,0 +1,54 @@
+/* Định dạng cho user-menu */
+.user-menu {
+    position: relative;
+    cursor: pointer;
+  }
+  
+  /* Định dạng cho welcome-text */
+  .welcome-text {
+    color: white;
+    font-size: 16px;
+    margin: 0 10px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /*  [SỬA] Đảm bảo dropdown menu hiển thị đúng */
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    min-width: 200px;
+    z-index: 1000;
+    display: block; /* Đảm bảo dropdown hiển thị */
+  }
+  
+  /* Định dạng cho từng mục trong dropdown */
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  
+  /* Hiệu ứng hover cho dropdown item */
+  .dropdown-item:hover {
+    background-color: #f5f5f5;
+  }
+  
+  /* Đảm bảo icon trong dropdown item có khoảng cách */
+  .dropdown-item i {
+    margin-right: 8px;
+  }
+  
+  /*  [SỬA] Định dạng cho icon mũi tên */
+  .welcome-text i.fa-chevron-down {
+    margin-left: 5px;
+    font-size: 12px; /* Kích thước nhỏ hơn để phù hợp */
+  }

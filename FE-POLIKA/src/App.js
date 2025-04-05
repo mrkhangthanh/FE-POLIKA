@@ -19,6 +19,9 @@ import Dashboard from './pages/Dashboard/Dashboard'
 import GetAllUserDashBoard from './pages/Dashboard/getAllUser'
 import UserDetail from './pages/Dashboard/userDetail'
 import LoginDashboard from './pages/Dashboard/loginDashboard'
+import Profile from './pages/Profile'
+import Settings from './pages/Settings'
+import Orders from './pages/ListOrders'
 
 
 
@@ -30,9 +33,11 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} /> 
           <Route path="/login"  element={<Login/>}/>
+          <Route path="/profile" element={<Profile />} />
           <Route path="/users" element={<GetAllUserDashBoard/>} />
           <Route path="/admin-login" element={<LoginDashboard/>} />
-      
+          <Route path="/settings" element={<Settings/>} />
+          <Route path="/list-Orders" element={<Orders />} />
           <Route path="/forgot-password" element={<ForgotPassword/>} />
           <Route path='/product-details/' element= {<ProductDetail/>} />
           <Route path='/cart' element= {<ShoppingCart/>} />

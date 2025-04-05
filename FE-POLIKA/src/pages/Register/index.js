@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { register } from '../../services/Api'; // Import phương thức register
+import { register } from '../../services/Api';
 import Header from '../../share/components/Layout/Header';
 import Footer from '../../share/components/Layout/Footer';
-import './Register.css'; // Sử dụng file CSS của bạn
+import BottomNav from '../../share/components/BottomNav';
+import './Register.css';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -12,25 +13,22 @@ const Register = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [role, setRole] = useState('customer');
   const [error, setError] = useState('');
-  const [message, setMessage] = useState(''); // Thêm thông báo thành công
-  const [isLoading, setIsLoading] = useState(false); // Thêm trạng thái loading
+  const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Xử lý submit form
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
     setMessage('');
-    setIsLoading(true); // Hiển thị trạng thái loading
+    setIsLoading(true);
 
-    // Kiểm tra dữ liệu cơ bản
     if (!name || !email || !password || !phoneNumber) {
       setError('Vui lòng điền đầy đủ thông tin.');
       setIsLoading(false);
       return;
     }
 
-    // Kiểm tra định dạng email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError('Email không hợp lệ.');
@@ -38,14 +36,12 @@ const Register = () => {
       return;
     }
 
-    // Kiểm tra độ dài mật khẩu
     if (password.length < 6) {
       setError('Mật khẩu phải có ít nhất 6 ký tự.');
       setIsLoading(false);
       return;
     }
 
-    // Kiểm tra định dạng số điện thoại
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phoneNumber)) {
       setError('Số điện thoại phải có đúng 10 chữ số.');
@@ -54,26 +50,26 @@ const Register = () => {
     }
 
     try {
-      // Gọi API đăng ký
+      //  [SỬA] Thêm log để kiểm tra dữ liệu trước khi gửi
+      console.log('Register payload:', { name, email, password, phone_number: phoneNumber, role });
+
       const response = await register({
         name,
         email,
         password,
-        phone_number: phoneNumber, // Đảm bảo API chấp nhận 'phone_number'
+        phone_number: phoneNumber,
         role,
       });
 
       setMessage(response.data.message || 'Đăng ký thành công!');
       console.log('Register successful:', response.data);
 
-      // Reset form
       setName('');
       setEmail('');
       setPassword('');
       setPhoneNumber('');
       setRole('customer');
 
-      // Chuyển hướng sau 2 giây
       setTimeout(() => {
         navigate('/login');
       }, 2000);
@@ -83,7 +79,7 @@ const Register = () => {
       );
       console.error('Error:', err);
     } finally {
-      setIsLoading(false); // Tắt trạng thái loading
+      setIsLoading(false);
     }
   };
 
@@ -153,7 +149,8 @@ const Register = () => {
             >
               <option value="customer">Khách hàng</option>
               <option value="technician">Thợ</option>
-              <option value="agent">Đại lý</option>
+              {/*  [SỬA] Xóa tùy chọn agent */}
+              {/* <option value="agent">Đại lý</option> */}
             </select>
           </div>
           <div className="button-lg">
@@ -166,6 +163,7 @@ const Register = () => {
           </p>
         </form>
       </div>
+      <BottomNav />
       <Footer />
     </>
   );

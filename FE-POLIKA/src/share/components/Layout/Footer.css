@@ -21,7 +21,6 @@
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 20px;
     max-width: 1200px;
     margin: 0 auto;
   }
@@ -100,7 +99,9 @@
   
   /* Đảm bảo responsive */
   @media (max-width: 768px) {
-   
+    .share-facebook-btn {
+      margin-bottom: 75px; /* Để tránh đè lên các phần khác */
+    }
   
     .footer-section.map iframe {
       width: 100%;

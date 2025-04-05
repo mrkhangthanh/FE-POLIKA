@@ -8,7 +8,19 @@ const useAuth = () => {
 
   useEffect(() => {
     const allowedRoles = ['admin', 'manager', 'content_writer', 'agent', 'technician'];
-    if (!token || !allowedRoles.includes(role)) {
+
+    // Kiểm tra token và role
+    if (!token || !role) {
+      // Nếu không có token hoặc role, điều hướng về login
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('role');
+      navigate('/admin-login', { replace: true });
+      return;
+    }
+
+    // Kiểm tra vai trò
+    if (!allowedRoles.includes(role)) {
       alert('Access denied. Only authorized roles can access the Dashboard.');
       localStorage.removeItem('token');
       localStorage.removeItem('user');

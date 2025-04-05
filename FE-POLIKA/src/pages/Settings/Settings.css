@@ -1,0 +1,129 @@
+/* Container chính */
+.settings-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    
+  }
+  
+  /* Tiêu đề trang */
+  .settings-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .settings-header h2 {
+    font-size: 28px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Section cài đặt */
+  .settings-section {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  /* Danh sách menu cài đặt */
+  .settings-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .settings-menu-item {
+    margin-bottom: 15px;
+  }
+  
+  .settings-menu-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #333;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+    gap: 15px;
+    cursor: pointer;
+  }
+  
+  .settings-menu-link:hover {
+    background-color: #f5f5f5;
+    color: #ff4d4f;
+  }
+  
+  .menu-arrow {
+    color: #999;
+    font-size: 14px;
+    transition: color 0.3s;
+  }
+  
+  .settings-menu-link:hover .menu-arrow {
+    color: #ff4d4f;
+  }
+  
+  /* Class để ẩn trên mobile */
+  .desktop-only {
+    display: block;
+  }
+  
+  /* Responsive cho tablet (768px - 1023px) */
+  @media (max-width: 1023px) {
+    .settings-container {
+      padding: 15px;
+    }
+  
+    .settings-header h2 {
+      font-size: 24px;
+    }
+  
+    .settings-section {
+      padding: 15px;
+    }
+  
+    .settings-menu-link {
+      font-size: 14px;
+      padding: 8px;
+    }
+  
+    .menu-arrow {
+      font-size: 12px;
+    }
+  }
+  
+  /* Responsive cho mobile (≤ 767px) */
+  @media (max-width: 767px) {
+    .settings-container {
+      padding: 10px;
+     
+    }
+  
+    .settings-header h2 {
+      font-size: 20px;
+    }
+  
+    .settings-section {
+      padding: 10px;
+    }
+  
+    .settings-menu-link {
+      font-size: 14px;
+      padding: 8px;
+    }
+  
+    .menu-arrow {
+      font-size: 12px;
+    }
+  
+    /* Ẩn tiêu đề trên mobile */
+    .desktop-only {
+      display: none;
+    }
+  }
