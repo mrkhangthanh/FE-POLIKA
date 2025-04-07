@@ -265,6 +265,7 @@ button,
 [type="button"],
 [type="reset"],
 [type="submit"] {
+  appearance: button;
   -webkit-appearance: button;
 }
 
@@ -324,7 +325,10 @@ progress {
 
 [type="search"] {
   outline-offset: -2px;
-  -webkit-appearance: none;
+  appearance: none;
+  /* -webkit-appearance: none; */
+  padding: 8px;
+  
 }
 
 [type="search"]::-webkit-search-decoration {
@@ -3801,7 +3805,7 @@ input[type="button"].btn-block {
   min-height: 1.5rem;
   padding-left: 1.5rem;
   -webkit-print-color-adjust: exact;
-  color-adjust: exact;
+  /* color-adjust: exact; */
   print-color-adjust: exact;
 }
 

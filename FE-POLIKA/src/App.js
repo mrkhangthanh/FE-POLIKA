@@ -22,6 +22,8 @@ import LoginDashboard from './pages/Dashboard/loginDashboard'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import Orders from './pages/ListOrders'
+import CreateOrder from './pages/CreateOrder'
+
 
 
 
@@ -38,6 +40,7 @@ const App = () => {
           <Route path="/admin-login" element={<LoginDashboard/>} />
           <Route path="/settings" element={<Settings/>} />
           <Route path="/list-Orders" element={<Orders />} />
+          <Route path="/create-order" element={<CreateOrder />} />
           <Route path="/forgot-password" element={<ForgotPassword/>} />
           <Route path='/product-details/' element= {<ProductDetail/>} />
           <Route path='/cart' element= {<ShoppingCart/>} />

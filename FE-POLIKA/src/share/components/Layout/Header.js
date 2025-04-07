@@ -2,6 +2,42 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Header.css';
 
+// Component con cho dropdown của user
+const UserDropdown = ({ user, onLogout, isOpen, toggle }) => (
+  <div
+    className="user-menu"
+    onClick={toggle}
+    onMouseEnter={() => toggle(true)}
+    onMouseLeave={() => toggle(false)}
+  >
+    <p className="welcome-text">
+      <i className="fa-solid fa-user" style={{ marginRight: '5px' }} />
+      Chào, {user.name}
+      <i className="fa-solid fa-chevron-down" style={{ marginLeft: '5px' }} />
+    </p>
+    {isOpen && (
+      <div
+        className="dropdown-menu"
+        onMouseEnter={() => toggle(true)}
+        onMouseLeave={() => toggle(false)}
+      >
+        <Link to="/profile" className="dropdown-item">
+          <i className="fa-solid fa-user-circle" style={{ marginRight: '5px' }} />
+          Thông tin tài khoản
+        </Link>
+        <Link to="/settings" className="dropdown-item">
+          <i className="fa-solid fa-gear" style={{ marginRight: '5px' }} />
+          Cài đặt
+        </Link>
+        <button className="dropdown-item logout-button" onClick={onLogout}>
+          <i className="fa-solid fa-sign-out-alt" style={{ marginRight: '5px' }} />
+          Đăng Xuất
+        </button>
+      </div>
+    )}
+  </div>
+);
+
 const Header = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
@@ -17,148 +53,99 @@ const Header = () => {
     navigate('/login');
   };
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
+  const toggleDropdown = (value) => {
+    setIsDropdownOpen(value !== undefined ? value : !isDropdownOpen);
   };
 
+  // Danh sách dịch vụ
+  const services = [
+    'dịch vụ 1',
+    'dịch vụ 2',
+    'dịch vụ 3',
+    'dịch vụ 4',
+    'dịch vụ 5',
+    'dịch vụ 6',
+    'dịch vụ 7',
+    'dịch vụ 8',
+    'dịch vụ 9',
+    'dịch vụ 10',
+    'dịch vụ 11',
+    'dịch vụ 12',
+    'dịch vụ 13',
+    'dịch vụ 14',
+  ];
+
+  // Component thông báo
+  const Notification = () => (
+    <a href="#">
+      <p className="notification">
+        <i className="fa-regular fa-bell" /> Thông báo
+      </p>
+    </a>
+  );
+
   return (
-    <>
-      <div id="header">
-        <div className="container-fluid bgheader">
-          <div className="row align-items-center">
-            <div className="col-lg-2 col-md-2 col-sm-12 text-center .logo-container">
-              <p className="logo-name">
-                <a className="stlogo" href="/">PUTINKA</a>
-              </p>
-            </div>
-            <div className="tkiem col-lg-6 col-md-6 col-sm-12 d-flex justify-content-center">
-              <input id="search" name="search_item" type="search" placeholder=" Nhập Tìm Kiếm ..." />
-              <button id="btn_search">
-                <i className="fa-solid fa-magnifying-glass" />
-              </button>
-            </div>
-            <div className="form_login col-lg-4 col-md-4 col-sm-12 d-flex justify-content-center align-items-center">
-              {isLoggedIn ? (
-                <>
-                  <div
-                    className="user-menu"
-                    onClick={toggleDropdown}
-                    onMouseEnter={() => setIsDropdownOpen(true)} // Mở dropdown khi hover
-                    onMouseLeave={() => setIsDropdownOpen(false)} // Đóng dropdown khi rời chuột
-                  >
-                    <p className="welcome-text">
-                      <i className="fa-solid fa-user" style={{ marginRight: '5px' }} /> {/* Icon user */}
-                      Chào, {user.name}
-                      {/*  [SỬA] Thêm icon mũi tên chỉ xuống */}
-                      <i className="fa-solid fa-chevron-down" style={{ marginLeft: '5px' }} />
-                    </p>
-                    {isDropdownOpen && (
-                      <div
-                        className="dropdown-menu"
-                        onMouseEnter={() => setIsDropdownOpen(true)} //  [SỬA] Giữ dropdown mở khi hover vào dropdown
-                        onMouseLeave={() => setIsDropdownOpen(false)} //  [SỬA] Đóng dropdown khi rời chuột khỏi dropdown
-                      >
-                        <Link to="/profile" className="dropdown-item">
-                          <i className="fa-solid fa-user-circle" style={{ marginRight: '5px' }} />
-                          Thông tin tài khoản
-                        </Link>
-                        <Link to="/settings" className="dropdown-item">
-                          <i className="fa-solid fa-gear" style={{ marginRight: '5px' }} />
-                          Cài đặt
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                  <p className="space">|</p>
-                  <button id="dangXuat" className="myBtn" onClick={handleLogout}>
-                    Đăng Xuất
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link to="/register">
-                    <button id="myBtn" className="myBtn">Đăng Ký</button>
-                  </Link>
-                  <p className="space">|</p>
-                  <Link to="/login">
-                    <button id="dangNhap" className="myBtn">Đăng Nhập</button>
-                  </Link>
-                </>
-              )}
-              <p className="space">|</p>
-              <a href="#">
-                <p>
-                  <i className="fa-solid fa-cart-shopping" />
-                </p>
-              </a>
-            </div>
+    <div id="header">
+      <div className="container-fluid bgheader">
+        <div className="row align-items-center">
+          <div className="col-lg-2 col-md-2 col-sm-12 text-center logo-container">
+            <p className="logo-name">
+              <a className="stlogo" href="/">PUTINKA</a>
+            </p>
           </div>
-          <div className="row">
-            <div className="ketNoi col-lg-2 col-md-2 col-sm-12 d-flex justify-content-center">
-              <p>Kết nối </p>
-              <a href>
-                <i className="fa-brands fa-facebook" />
-              </a>
-              <a href>
-                <i className="fa-brands fa-tiktok" />
-              </a>
-            </div>
-            <div className="col-lg-6 col-md-6 col-sm-12">
-              <ul className="services d-flex">
-                <a href="#">
-                  <li>dịch vụ 1 </li>
+          <div className="tkiem col-lg-6 col-md-6 col-sm-12 d-flex justify-content-center">
+            <input id="search" name="search_item" type="search" placeholder=" Nhập Tìm Kiếm ..." />
+            <button id="btn_search">
+              <i className="fa-solid fa-magnifying-glass" />
+            </button>
+          </div>
+          <div className="form_login col-lg-4 col-md-4 col-sm-12 d-flex justify-content-center align-items-center">
+            {isLoggedIn ? (
+              <>
+                <UserDropdown
+                  user={user}
+                  onLogout={handleLogout}
+                  isOpen={isDropdownOpen}
+                  toggle={toggleDropdown}
+                />
+                <Notification />
+              </>
+            ) : (
+              <>
+                <Link to="/register">
+                  <button id="myBtn" className="myBtn">Đăng Ký</button>
+                </Link>
+                <p className="space">|</p>
+                <Link to="/login">
+                  <button id="dangNhap" className="myBtn">Đăng Nhập</button>
+                </Link>
+                <Notification />
+              </>
+            )}
+          </div>
+        </div>
+        <div className="row">
+          <div className="ketNoi col-lg-2 col-md-2 col-sm-12 d-flex justify-content-center">
+            <p>Kết nối </p>
+            <a href>
+              <i className="fa-brands fa-facebook" />
+            </a>
+            <a href>
+              <i className="fa-brands fa-tiktok" />
+            </a>
+          </div>
+          <div className="col-lg-6 col-md-6 col-sm-12">
+            <ul className="services d-flex">
+              {services.map((service, index) => (
+                <a key={index} href="#">
+                  <li>{service}</li>
                 </a>
-                <a href="#">
-                  <li>dịch vụ 2 </li>
-                </a>
-                <a href="#">
-                  <li>dịch vụ 3 </li>
-                </a>
-                <a href="#">
-                  <li>dịch vụ 4 </li>
-                </a>
-                <a href="#">
-                  <li>dịch vụ 5 </li>
-                </a>
-                <a href="#">
-                  <li>dịch vụ 6 </li>
-                </a>
-                <a href="#">
-                  <li>dịch vụ 7 </li>
-                </a>
-                <a href="#">
-                  <li>dịch vụ 8 </li>
-                </a>
-                <a href="#">
-                  <li>dịch vụ 9 </li>
-                </a>
-                <a href="#">
-                  <li>dịch vụ 8 </li>
-                </a>
-                <a href="#">
-                  <li>dịch vụ 9 </li>
-                </a>
-              </ul>
-            </div>
-            <div className="col-lg-4 col-md-4 col-sm-12">
-              <ul className="maintence d-flex justify-content-center">
-                <a href="#">
-                  <li>Kênh Thợ </li>
-                </a>
-                <a href="#">
-                  <li>Kênh Khách Hàng</li>
-                </a>
-                <a href="#">
-                  <li>
-                    <i className="fa-regular fa-bell" /> Thông báo
-                  </li>
-                </a>
-              </ul>
-            </div>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

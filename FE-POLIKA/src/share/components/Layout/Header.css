@@ -2,19 +2,20 @@
 .user-menu {
     position: relative;
     cursor: pointer;
-  }
-  
-  /* Định dạng cho welcome-text */
-  .welcome-text {
+}
+
+
+/* Định dạng cho welcome-text */
+.welcome-text {
     color: white;
     font-size: 16px;
     margin: 0 10px;
     display: flex;
     align-items: center;
-  }
-  
-  /*  [SỬA] Đảm bảo dropdown menu hiển thị đúng */
-  .dropdown-menu {
+}
+
+/* Định dạng cho dropdown menu */
+.dropdown-menu {
     position: absolute;
     top: 100%;
     right: 0;
@@ -24,31 +25,113 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     min-width: 200px;
     z-index: 1000;
-    display: block; /* Đảm bảo dropdown hiển thị */
-  }
-  
-  /* Định dạng cho từng mục trong dropdown */
-  .dropdown-item {
+    display: block;
+}
+
+/* Định dạng cho từng mục trong dropdown */
+.dropdown-item {
     display: flex;
     align-items: center;
     padding: 10px 15px;
     color: #333;
     text-decoration: none;
     font-size: 14px;
-  }
-  
-  /* Hiệu ứng hover cho dropdown item */
-  .dropdown-item:hover {
+}
+
+/* Định dạng cho nút Đăng Xuất trong dropdown */
+.logout-button {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Hiệu ứng hover cho dropdown item */
+.dropdown-item:hover,
+.logout-button:hover {
     background-color: #f5f5f5;
-  }
-  
-  /* Đảm bảo icon trong dropdown item có khoảng cách */
-  .dropdown-item i {
+}
+
+/* Đảm bảo icon trong dropdown item có khoảng cách */
+.dropdown-item i,
+.logout-button i {
     margin-right: 8px;
-  }
-  
-  /*  [SỬA] Định dạng cho icon mũi tên */
-  .welcome-text i.fa-chevron-down {
+}
+
+/* Định dạng cho icon mũi tên */
+.welcome-text i.fa-chevron-down {
     margin-left: 5px;
-    font-size: 12px; /* Kích thước nhỏ hơn để phù hợp */
-  }
+    font-size: 12px;
+}
+
+/* Định dạng cho phần thông báo */
+.notification {
+    color: white;
+    font-size: 16px;
+    margin: 0 10px;
+    display: flex;
+    align-items: center;
+}
+
+.notification i {
+    margin-right: 5px;
+}
+.form_login a {
+    text-decoration: none;
+   
+}
+/* Định dạng cho phần giỏ hàng */
+.form_login a p {
+    color: white;
+    font-size: 16px;
+    margin: 0 10px;
+}
+
+/* Định dạng cho phần phân cách */
+.space {
+    color: white;
+    margin: 0 5px;
+}
+
+
+/* Responsive cho mobile (≤ 767px) */
+@media (max-width: 767px) {
+    /* Ẩn phần tìm kiếm */
+    .tkiem {
+        display: none;
+    }
+
+    /* Ẩn phần kết nối */
+    .ketNoi {
+        display: none !important;
+    }
+
+    /* Ẩn danh sách dịch vụ */
+    .services {
+        display: none;
+    }
+
+    /* Ẩn danh sách maintence (phần thông báo ở dưới) */
+    .maintence {
+        display: none;
+    }
+
+    /* Đảm bảo phần form_login (Chào user, giỏ hàng, thông báo) hiển thị đẹp */
+    .form_login {
+        flex-wrap: nowrap;
+        gap: 20px;
+        height: 50px;
+    }
+
+    .welcome-text,
+    .notification,
+    .form_login a p {
+        font-size: 14px;
+        margin: 0 5px;
+    }
+
+    .space {
+        margin: 0 3px;
+    }
+}

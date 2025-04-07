@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { login } from '../../services/Api';
 import Header from '../../share/components/Layout/Header';
 import Footer from '../../share/components/Layout/Footer';
@@ -13,20 +13,34 @@ const Login = () => {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const formRef = useRef(null);
 
+  // Cuộn lên đầu trang và focus vào form khi trang được tải
+  useEffect(() => {
+    if (location.state?.scrollToTop) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    if (formRef.current) {
+      formRef.current.querySelector('input')?.focus();
+    }
+  }, [location]);
+
+  // Kiểm tra nếu người dùng đã đăng nhập
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
     if (token && user) {
       if (user.role === 'customer') {
-        navigate('/');
+        navigate(location.state?.redirectTo || '/', { replace: true });
       } else if (user.role === 'technician') {
-        navigate('/');
+        navigate(location.state?.redirectTo || '/', { replace: true });
       } else if (user.role === 'admin') {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }
     }
-  }, [navigate]);
+  }, [navigate, location.state]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -48,12 +62,12 @@ const Login = () => {
       setMessage('Đăng nhập thành công!');
       const { accessToken, user } = response.data;
 
-      //  [SỬA] Lưu vào localStorage và đảm bảo đồng bộ
+      // Lưu vào localStorage và đảm bảo đồng bộ
       localStorage.setItem('token', accessToken);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('role', user.role);
 
-      //  [SỬA] Kiểm tra xem localStorage đã được lưu chưa
+      // Kiểm tra xem localStorage đã được lưu chưa
       const storedToken = localStorage.getItem('token');
       const storedUser = JSON.parse(localStorage.getItem('user'));
       console.log('Stored in localStorage:', { storedToken, storedUser });
@@ -68,18 +82,18 @@ const Login = () => {
         return;
       }
 
-      //  [SỬA] Điều hướng trực tiếp đến trang đích và đảm bảo đồng bộ
+      // Điều hướng sau khi đăng nhập thành công
       setTimeout(() => {
         if (user.role === 'customer') {
-          navigate('/', { replace: true });
+          navigate(location.state?.redirectTo || '/', { replace: true });
         } else if (user.role === 'technician') {
-          navigate('/', { replace: true });
+          navigate(location.state?.redirectTo || '/', { replace: true });
         }
         setIsLoading(false);
       }, 100);
     } catch (err) {
       console.error('Error details:', err);
-      console.log('Error response:', err.response); //  [SỬA] Thêm log chi tiết
+      console.log('Error response:', err.response);
       const errorMessage =
         err.response?.data?.error ||
         err.response?.data?.message ||
@@ -93,7 +107,7 @@ const Login = () => {
     <>
       <Header />
       <div className="login-container-lg">
-        <form className="login-form-lg" onSubmit={handleLogin}>
+        <form className="login-form-lg" onSubmit={handleLogin} ref={formRef}>
           <h2>Đăng nhập</h2>
           {error && <p className="error-message-lg">{error}</p>}
           {message && <p className="success-message-lg">{message}</p>}
@@ -135,7 +149,6 @@ const Login = () => {
         </form>
       </div>
       <BottomNav />
-      {/* Footer */}
       <Footer />
     </>
   );

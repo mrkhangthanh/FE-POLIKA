@@ -82,7 +82,7 @@ a {
 }
 
 #search {
-  width: 90%;
+  width: 100%;
   float: left;
   border: none;
   border-radius: 5px 0 0 5px;
@@ -136,7 +136,9 @@ p.space {
 .services {
   display: flex;
   gap: 15px;
+  width: 90%;
   font-size: var(--font-size-sm);
+  margin-left: 5%;
 }
 
 .services li {
@@ -145,11 +147,12 @@ p.space {
 
 .services a {
   color: #f3ebeb;
+  text-decoration: none;
 }
 
 .services li:hover {
   color: var(--white);
-  font-weight: bold;
+  
 }
 
 .ketNoi {
