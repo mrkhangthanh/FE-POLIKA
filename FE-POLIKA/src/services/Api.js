@@ -6,3 +6,6 @@ import Http from "./Http";
     export const updateUser = (userId, userData) => Http.put(`/users/${userId}`, userData);
     export const deleteUser = (userId) => Http.delete(`/users/${userId}`);
     export const getStats = () => Http.get('/stats');
+    export const createOrder= (orderData) => Http.post('/create-order', orderData);
+    export const getCategoryService = () => Http.get('/category-service');
+    export const getCustomerOrders = (config) => Http.get('/customer/orders', config);

@@ -1,105 +1,113 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../share/components/Layout/Header';
-
 import BottomNav from '../../share/components/BottomNav';
+import { getCustomerOrders } from '../../services/Api';
 import './ListOrders.css';
 
-// Mock data chung (được chia sẻ với CreateOrder.js)
-export const mockOrdersData = {
-  customer: [
-    {
-      id: 1,
-      date: '2025-04-01',
-      action: 'Đặt dịch vụ sửa ống nước',
-      status: 'Hoàn thành',
-      technician: 'Nguyễn Văn A',
-      completedDate: '2025-04-02',
-      note: 'Hoàn thành sớm 1 ngày.',
-    },
-    {
-      id: 2,
-      date: '2025-03-28',
-      action: 'Đặt dịch vụ sửa điện',
-      status: 'Hoàn thành',
-      technician: 'Trần Văn B',
-      completedDate: '2025-03-29',
-      note: 'Đã kiểm tra kỹ.',
-    },
-    {
-      id: 3,
-      date: '2025-03-25',
-      action: 'Đặt dịch vụ lắp điều hòa',
-      status: 'Đang xử lý',
-      technician: 'Lê Văn C',
-      note: 'Đang chờ linh kiện.',
-    },
-    {
-      id: 4,
-      date: '2025-03-20',
-      action: 'Đặt dịch vụ sửa máy giặt',
-      status: 'Chưa hoàn thành',
-      technician: 'Phạm Văn D',
-      note: 'Chưa liên hệ khách hàng.',
-    },
-  ],
-  technician: [
-    {
-      id: 1,
-      date: '2025-04-01',
-      action: 'Sửa ống nước',
-      status: 'Hoàn thành',
-      customer: 'Nguyễn Thị X',
-      completedDate: '2025-04-02',
-      note: 'Hoàn thành sớm 1 ngày.',
-    },
-    {
-      id: 2,
-      date: '2025-03-28',
-      action: 'Sửa điện',
-      status: 'Hoàn thành',
-      customer: 'Trần Thị Y',
-      completedDate: '2025-03-29',
-      note: 'Đã kiểm tra kỹ.',
-    },
-    {
-      id: 3,
-      date: '2025-03-25',
-      action: 'Lắp điều hòa',
-      status: 'Đang xử lý',
-      customer: 'Lê Thị Z',
-      note: 'Đang chờ linh kiện.',
-    },
-    {
-      id: 4,
-      date: '2025-03-20',
-      action: 'Sửa máy giặt',
-      status: 'Chưa hoàn thành',
-      customer: 'Phạm Thị W',
-      note: 'Chưa liên hệ khách hàng.',
-    },
-  ],
+// Hàm định dạng ngày theo dd/mm/yyyy hh:mm:ss
+const formatDate = (dateString) => {
+  if (!dateString) return 'Không xác định';
+
+  let normalizedDateString = dateString;
+  if (dateString.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/)) {
+    normalizedDateString = `${dateString}.000Z`;
+  }
+
+  const date = new Date(normalizedDateString);
+  if (isNaN(date.getTime())) {
+    console.error('Invalid date:', dateString);
+    return 'Không xác định';
+  }
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+};
+
+// Hàm chuyển đổi trạng thái sang tiếng Việt
+const getStatusLabel = (status) => {
+  switch (status) {
+    case 'completed':
+      return 'Hoàn thành';
+    case 'cancelled':
+      return 'Đã hủy';
+    case 'pending':
+    case 'accepted':
+    default:
+      return 'Đang xử lý';
+  }
+};
+
+// Hàm lấy class CSS cho trạng thái
+const getStatusClass = (status) => {
+  switch (status) {
+    case 'completed':
+      return 'status-completed';
+    case 'cancelled':
+      return 'status-cancelled';
+    case 'pending':
+    case 'accepted':
+    default:
+      return 'status-processing';
+  }
 };
 
 const Orders = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Lấy thông tin người dùng từ localStorage
   const user = JSON.parse(localStorage.getItem('user'));
   const isLoggedIn = localStorage.getItem('token') && user && (user.role === 'customer' || user.role === 'technician');
 
-  // State để quản lý modal
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [pagination, setPagination] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // State để quản lý ngày bắt đầu, ngày kết thúc và danh sách đơn hàng đã lọc
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [filteredOrders, setFilteredOrders] = useState([]);
 
-  // Lấy danh sách đơn hàng dựa trên vai trò người dùng
-  const orders = user.role === 'customer' ? mockOrdersData.customer : mockOrdersData.technician;
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/login', { state: { redirectTo: '/list-orders' } });
+    }
+  }, [isLoggedIn, navigate]);
 
-  // Hàm lọc đơn hàng theo khoảng ngày
+  const fetchOrders = async (page = 1) => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const response = await getCustomerOrders({
+        params: { page, limit: 10, sort: '-created_at' }, // Sửa sort thành created_at
+      });
+      const fetchedOrders = response.data.orders || [];
+      // Log để kiểm tra dữ liệu
+      console.log('Fetched orders:', fetchedOrders);
+      setOrders(fetchedOrders);
+      setPagination(response.data.pagination || {});
+      setFilteredOrders(fetchedOrders);
+    } catch (err) {
+      setError('Không thể tải danh sách đơn hàng. Vui lòng thử lại.');
+      console.error('Error fetching orders:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchOrders();
+    }
+  }, [isLoggedIn, location.state?.refresh]);
+
   const filterOrdersByDate = () => {
     if (!startDate || !endDate) {
       setFilteredOrders(orders);
@@ -109,38 +117,28 @@ const Orders = () => {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    // Kiểm tra nếu ngày kết thúc nhỏ hơn ngày bắt đầu
     if (end < start) {
       alert('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu!');
       return;
     }
 
     const filtered = orders.filter((order) => {
-      const orderDate = new Date(order.date);
+      const orderDate = new Date(order.created_at); // Sửa createdAt thành created_at
       return orderDate >= start && orderDate <= end;
     });
 
     setFilteredOrders(filtered);
   };
 
-  // Khởi tạo danh sách đơn hàng ban đầu
-  useEffect(() => {
-    setFilteredOrders(orders);
-  }, [user.role]);
-
-  // Hàm mở modal
   const openModal = (order) => {
     setSelectedOrder(order);
   };
 
-  // Hàm đóng modal
   const closeModal = () => {
     setSelectedOrder(null);
   };
 
-  // Kiểm tra đăng nhập
   if (!isLoggedIn) {
-    navigate('/login');
     return null;
   }
 
@@ -148,7 +146,6 @@ const Orders = () => {
     <>
       <Header />
       <div className="orders-container">
-        {/* Tiêu đề */}
         <div className="orders-header">
           <h2>
             <i className="fa-solid fa-file-invoice" style={{ marginRight: '10px' }} />
@@ -156,7 +153,6 @@ const Orders = () => {
           </h2>
         </div>
 
-        {/* Mục chọn ngày */}
         <div className="date-filter">
           <div className="date-input-group">
             <label htmlFor="start-date">Ngày bắt đầu:</label>
@@ -181,35 +177,30 @@ const Orders = () => {
           </button>
         </div>
 
-        {/* Danh sách đơn hàng */}
         <div className="orders-section">
-          {filteredOrders.length === 0 ? (
+          {isLoading ? (
+            <p>Đang tải...</p>
+          ) : error ? (
+            <p className="error">{error}</p>
+          ) : filteredOrders.length === 0 ? (
             <p className="no-orders">
               {startDate || endDate ? 'Không tìm thấy đơn hàng trong khoảng thời gian này.' : 'Bạn chưa có đơn hàng nào.'}
             </p>
           ) : (
             <ul className="orders-list">
               {filteredOrders.map((order) => (
-                <li key={order.id} className="order-item" onClick={() => openModal(order)}>
+                <li key={order._id} className="order-item" onClick={() => openModal(order)}>
                   <div className="order-details">
                     <p className="order-date">
-                      <strong>Ngày:</strong> {order.date}
+                      <strong>Ngày:</strong> {formatDate(order.created_at)} {/* Sửa createdAt thành created_at */}
                     </p>
                     <p className="order-action">
-                      <strong>Hành động:</strong> {order.action}
+                      <strong>Hành động:</strong> Đặt dịch vụ {order.service_type}
                     </p>
                     <p className="order-status">
                       <strong>Trạng thái:</strong>{' '}
-                      <span
-                        className={`status-badge ${
-                          order.status === 'Hoàn thành'
-                            ? 'status-completed'
-                            : order.status === 'Đang xử lý'
-                            ? 'status-processing'
-                            : 'status-pending'
-                        }`}
-                      >
-                        {order.status}
+                      <span className={`status-badge ${getStatusClass(order.status)}`}>
+                        {getStatusLabel(order.status)}
                       </span>
                     </p>
                   </div>
@@ -219,7 +210,20 @@ const Orders = () => {
           )}
         </div>
 
-        {/* Modal chi tiết đơn hàng */}
+        {pagination.totalPages > 1 && (
+          <div className="pagination">
+            <p>
+              Trang: {pagination.currentPage} / {pagination.totalPages}
+            </p>
+            {pagination.prevPage && (
+              <button onClick={() => fetchOrders(pagination.prevPage)}>Trang trước</button>
+            )}
+            {pagination.nextPage && (
+              <button onClick={() => fetchOrders(pagination.nextPage)}>Trang sau</button>
+            )}
+          </div>
+        )}
+
         {selectedOrder && (
           <div className="order-detail-modal">
             <div className="order-detail-modal-content">
@@ -231,37 +235,31 @@ const Orders = () => {
               </div>
               <div className="order-detail-modal-body">
                 <p className="order-detail-item">
-                  <strong>Ngày:</strong> {selectedOrder.date}
+                  <strong>Ngày:</strong> {formatDate(selectedOrder.created_at)} {/* Sửa createdAt thành created_at */}
                 </p>
                 <p className="order-detail-item">
-                  <strong>Hành động:</strong> {selectedOrder.action}
+                  <strong>Hành động:</strong> Đặt dịch vụ {selectedOrder.service_type}
                 </p>
                 <p className="order-detail-item">
                   <strong>Trạng thái:</strong>{' '}
-                  <span
-                    className={`status-badge ${
-                      selectedOrder.status === 'Hoàn thành'
-                        ? 'status-completed'
-                        : selectedOrder.status === 'Đang xử lý'
-                        ? 'status-processing'
-                        : 'status-pending'
-                    }`}
-                  >
-                    {selectedOrder.status}
+                  <span className={`status-badge ${getStatusClass(selectedOrder.status)}`}>
+                    {getStatusLabel(selectedOrder.status)}
                   </span>
                 </p>
                 <p className="order-detail-item">
                   <strong>{user.role === 'customer' ? 'Kỹ thuật viên:' : 'Khách hàng:'}</strong>{' '}
-                  {user.role === 'customer' ? selectedOrder.technician : selectedOrder.customer}
+                  {user.role === 'customer'
+                    ? selectedOrder.technician?.name || 'Chưa có kỹ thuật viên'
+                    : selectedOrder.user?.name || 'Không xác định'}
                 </p>
-                {selectedOrder.completedDate && (
+                {selectedOrder.updated_at && selectedOrder.status === 'completed' && ( /* Sửa updatedAt thành updated_at */
                   <p className="order-detail-item">
-                    <strong>Ngày hoàn thành:</strong> {selectedOrder.completedDate}
+                    <strong>Ngày hoàn thành:</strong> {formatDate(selectedOrder.updated_at)} {/* Sửa updatedAt thành updated_at */}
                   </p>
                 )}
-                {selectedOrder.note && (
+                {selectedOrder.description && (
                   <p className="order-detail-item">
-                    <strong>Ghi chú:</strong> {selectedOrder.note}
+                    <strong>Mô tả:</strong> {selectedOrder.description}
                   </p>
                 )}
               </div>
@@ -271,7 +269,6 @@ const Orders = () => {
 
         <BottomNav />
       </div>
-   
     </>
   );
 };

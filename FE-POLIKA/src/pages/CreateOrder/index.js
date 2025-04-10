@@ -1,84 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../share/components/Layout/Header';
 import BottomNav from '../../share/components/BottomNav';
+import { createOrder, getCategoryService } from '../../services/Api'; // Import API mới
 import './CreateOrder.css';
-
-// Mock data chung (sẽ được chia sẻ với Orders.js)
-const mockOrdersData = {
-  customer: [
-    {
-      id: 1,
-      date: '2025-04-01',
-      action: 'Đặt dịch vụ sửa ống nước',
-      status: 'Hoàn thành',
-      technician: 'Nguyễn Văn A',
-      completedDate: '2025-04-02',
-      note: 'Hoàn thành sớm 1 ngày.',
-    },
-    {
-      id: 2,
-      date: '2025-03-28',
-      action: 'Đặt dịch vụ sửa điện',
-      status: 'Hoàn thành',
-      technician: 'Trần Văn B',
-      completedDate: '2025-03-29',
-      note: 'Đã kiểm tra kỹ.',
-    },
-    {
-      id: 3,
-      date: '2025-03-25',
-      action: 'Đặt dịch vụ lắp điều hòa',
-      status: 'Đang xử lý',
-      technician: 'Lê Văn C',
-      note: 'Đang chờ linh kiện.',
-    },
-    {
-      id: 4,
-      date: '2025-03-20',
-      action: 'Đặt dịch vụ sửa máy giặt',
-      status: 'Chưa hoàn thành',
-      technician: 'Phạm Văn D',
-      note: 'Chưa liên hệ khách hàng.',
-    },
-  ],
-  technician: [
-    {
-      id: 1,
-      date: '2025-04-01',
-      action: 'Sửa ống nước',
-      status: 'Hoàn thành',
-      customer: 'Nguyễn Thị X',
-      completedDate: '2025-04-02',
-      note: 'Hoàn thành sớm 1 ngày.',
-    },
-    {
-      id: 2,
-      date: '2025-03-28',
-      action: 'Sửa điện',
-      status: 'Hoàn thành',
-      customer: 'Trần Thị Y',
-      completedDate: '2025-03-29',
-      note: 'Đã kiểm tra kỹ.',
-    },
-    {
-      id: 3,
-      date: '2025-03-25',
-      action: 'Lắp điều hòa',
-      status: 'Đang xử lý',
-      customer: 'Lê Thị Z',
-      note: 'Đang chờ linh kiện.',
-    },
-    {
-      id: 4,
-      date: '2025-03-20',
-      action: 'Sửa máy giặt',
-      status: 'Chưa hoàn thành',
-      customer: 'Phạm Thị W',
-      note: 'Chưa liên hệ khách hàng.',
-    },
-  ],
-};
 
 const CreateOrder = () => {
   const navigate = useNavigate();
@@ -89,25 +14,50 @@ const CreateOrder = () => {
 
   // State để quản lý form
   const [formData, setFormData] = useState({
-    phone: '',
-    address: '',
-    fullName: '',
-    category: '',
-    price: 'Thỏa thuận',
-    note: '',
+    service_type: '',
+    description: '',
+    street: '',
+    city: '',
+    district: '',
+    ward: '',
+    country: '',
+    phone_number: '',
+    price: '',
   });
 
-  // State để quản lý lỗi validation
+  // State để quản lý danh sách service_type từ BE
+  const [categories, setCategories] = useState([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+
+  // State để quản lý lỗi và thông báo
   const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // Nếu chưa đăng nhập, điều hướng về trang login
-  if (!isLoggedIn) {
-    navigate('/login');
-    return null;
-  }
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/login', { state: { redirectTo: '/create-order' } });
+    }
+  }, [isLoggedIn, navigate]);
 
-  // Danh sách danh mục
-  const categories = ['Điện nước', 'Điều hòa', 'Dọn vệ sinh', 'Sửa máy giặt', 'Khác'];
+  // Gọi API để lấy danh sách service_type khi component được mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setIsLoadingCategories(true);
+      try {
+        const response = await getCategoryService();
+        setCategories(response.data.service_types); // Lưu danh sách service_types từ BE
+      } catch (err) {
+        console.error('Error fetching service types:', err);
+        setErrors({ general: 'Không thể tải danh sách dịch vụ. Vui lòng thử lại.' });
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Xử lý thay đổi input
   const handleInputChange = (e) => {
@@ -121,36 +71,76 @@ const CreateOrder = () => {
   };
 
   // Xử lý submit form
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({});
+    setMessage('');
+    setIsLoading(true);
 
     // Validation
     const newErrors = {};
-    if (!formData.phone) newErrors.phone = 'Số điện thoại là bắt buộc';
-    if (!formData.address) newErrors.address = 'Địa chỉ là bắt buộc';
-    if (!formData.fullName) newErrors.fullName = 'Họ tên là bắt buộc';
-    if (!formData.category) newErrors.category = 'Vui lòng chọn danh mục';
+    if (!formData.service_type) newErrors.service_type = 'Vui lòng chọn danh mục dịch vụ';
+    if (!formData.description) newErrors.description = 'Vui lòng nhập mô tả vấn đề';
+    if (!formData.street) newErrors.street = 'Vui lòng nhập số nhà, đường';
+    if (!formData.city) newErrors.city = 'Vui lòng nhập thành phố';
+    if (!formData.district) newErrors.district = 'Vui lòng nhập quận/huyện';
+    if (!formData.ward) newErrors.ward = 'Vui lòng nhập phường/xã';
+    if (!formData.country) newErrors.country = 'Vui lòng nhập quốc gia';
+    if (!formData.phone_number) {
+      newErrors.phone_number = 'Vui lòng nhập số điện thoại';
+    } else if (!/^\d{10}$/.test(formData.phone_number)) {
+      newErrors.phone_number = 'Số điện thoại phải có 10 chữ số.';
+    }
+    if (!formData.price) {
+      newErrors.price = 'Vui lòng nhập mức giá';
+    } else if (isNaN(formData.price) || parseFloat(formData.price) <= 0) {
+      newErrors.price = 'Mức giá phải là số lớn hơn 0';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      setIsLoading(false);
       return;
     }
 
-    // Tạo đơn hàng mới
-    const newOrder = {
-      id: mockOrdersData[user.role].length + 1,
-      date: new Date().toISOString().split('T')[0], // Ngày hiện tại
-      action: `Đặt dịch vụ ${formData.category.toLowerCase()}`,
-      status: 'Chưa hoàn thành',
-      [user.role === 'customer' ? 'technician' : 'customer']: user.role === 'customer' ? 'Chưa chỉ định' : user.fullName,
-      note: formData.note || 'Không có ghi chú',
+    // Chuẩn bị dữ liệu gửi lên BE
+    const orderData = {
+      service_type: formData.service_type,
+      description: formData.description,
+      address: {
+        street: formData.street,
+        city: formData.city,
+        district: formData.district,
+        ward: formData.ward,
+        country: formData.country,
+      },
+      phone_number: formData.phone_number,
+      price: parseFloat(formData.price),
     };
 
-    // Thêm đơn hàng mới vào mock data
-    mockOrdersData[user.role].push(newOrder);
+    // Log dữ liệu gửi lên
+    console.log('Order Data Sent:', orderData);
 
-    // Điều hướng đến trang danh sách đơn hàng
-    navigate('/list-orders');
+    try {
+      // Gọi API tạo đơn hàng
+      const response = await createOrder(orderData);
+      console.log('Create Order Response:', response.data);
+
+      setMessage('Đơn hàng đã được tạo thành công!');
+      setTimeout(() => {
+        setIsLoading(false);
+        navigate('/list-orders');
+      }, 1000);
+    } catch (err) {
+      console.error('Error creating order:', err);
+      console.log('Error Response Data:', err.response?.data);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        'Tạo đơn hàng thất bại. Vui lòng thử lại.';
+      setErrors({ general: errorMessage });
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -166,96 +156,167 @@ const CreateOrder = () => {
 
         <div className="create-order-section">
           <form onSubmit={handleSubmit}>
-            {/* Số điện thoại */}
-            <div className="form-group">
-              <label htmlFor="phone">Số điện thoại <span className="required">*</span></label>
-              <input
-                type="text"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                placeholder="Nhập số điện thoại"
-              />
-              {errors.phone && <p className="error">{errors.phone}</p>}
-            </div>
+            {/* Thông báo lỗi chung hoặc thành công */}
+            {errors.general && <p className="error">{errors.general}</p>}
+            {message && <p className="success">{message}</p>}
 
-            {/* Địa chỉ */}
+            {/* Danh mục dịch vụ (service_type) */}
             <div className="form-group">
-              <label htmlFor="address">Địa chỉ <span className="required">*</span></label>
-              <input
-                type="text"
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                placeholder="Nhập địa chỉ"
-              />
-              {errors.address && <p className="error">{errors.address}</p>}
-            </div>
-
-            {/* Họ tên */}
-            <div className="form-group">
-              <label htmlFor="fullName">Họ tên <span className="required">*</span></label>
-              <input
-                type="text"
-                id="fullName"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                placeholder="Nhập họ tên"
-              />
-              {errors.fullName && <p className="error">{errors.fullName}</p>}
-            </div>
-
-            {/* Danh mục */}
-            <div className="form-group">
-              <label htmlFor="category">Danh mục <span className="required">*</span></label>
+              <label htmlFor="service_type">
+                Danh mục dịch vụ <span className="required">*</span>
+              </label>
               <select
-                id="category"
-                name="category"
-                value={formData.category}
+                id="service_type"
+                name="service_type"
+                value={formData.service_type}
                 onChange={handleInputChange}
+                disabled={isLoading || isLoadingCategories}
               >
-                <option value="">Chọn danh mục</option>
+                <option value="">{isLoadingCategories ? 'Đang tải...' : 'Chọn danh mục'}</option>
                 {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
+                  <option key={category.value} value={category.value}>
+                    {category.label}
                   </option>
                 ))}
               </select>
-              {errors.category && <p className="error">{errors.category}</p>}
+              {errors.service_type && <p className="error">{errors.service_type}</p>}
             </div>
 
-            {/* Mức giá */}
+            {/* Mô tả vấn đề (description) */}
             <div className="form-group">
-              <label htmlFor="price">Mức giá</label>
+              <label htmlFor="description">
+                Mô tả vấn đề <span className="required">*</span>
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Mô tả chi tiết vấn đề của bạn"
+                rows="4"
+                disabled={isLoading}
+              />
+              {errors.description && <p className="error">{errors.description}</p>}
+            </div>
+
+            {/* Địa chỉ (address) */}
+            <div className="form-group">
+              <label htmlFor="street">
+                Số nhà, Đường <span className="required">*</span>
+              </label>
               <input
                 type="text"
+                id="street"
+                name="street"
+                value={formData.street}
+                onChange={handleInputChange}
+                placeholder="Ví dụ: 123 Đường Láng"
+                disabled={isLoading}
+              />
+              {errors.street && <p className="error">{errors.street}</p>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="city">
+                Thành phố <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="city"
+                name="city"
+                value={formData.city}
+                onChange={handleInputChange}
+                placeholder="Ví dụ: Hà Nội"
+                disabled={isLoading}
+              />
+              {errors.city && <p className="error">{errors.city}</p>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="district">
+                Quận/Huyện <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="district"
+                name="district"
+                value={formData.district}
+                onChange={handleInputChange}
+                placeholder="Ví dụ: Ba Đình"
+                disabled={isLoading}
+              />
+              {errors.district && <p className="error">{errors.district}</p>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="ward">
+                Phường/Xã <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="ward"
+                name="ward"
+                value={formData.ward}
+                onChange={handleInputChange}
+                placeholder="Ví dụ: Trúc Bạch"
+                disabled={isLoading}
+              />
+              {errors.ward && <p className="error">{errors.ward}</p>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="country">
+                Quốc gia <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="country"
+                name="country"
+                value={formData.country}
+                onChange={handleInputChange}
+                placeholder="Ví dụ: Việt Nam"
+                disabled={isLoading}
+              />
+              {errors.country && <p className="error">{errors.country}</p>}
+            </div>
+
+            {/* Số điện thoại (phone_number) */}
+            <div className="form-group">
+              <label htmlFor="phone_number">
+                Số điện thoại <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="phone_number"
+                name="phone_number"
+                value={formData.phone_number}
+                onChange={handleInputChange}
+                placeholder="Ví dụ: 0393456789"
+                disabled={isLoading}
+              />
+              {errors.phone_number && <p className="error">{errors.phone_number}</p>}
+            </div>
+
+            {/* Mức giá (price) */}
+            <div className="form-group">
+              <label htmlFor="price">
+                Mức giá (VND) <span className="required">*</span>
+              </label>
+              <input
+                type="number"
                 id="price"
                 name="price"
                 value={formData.price}
                 onChange={handleInputChange}
-                placeholder="Nhập mức giá hoặc để mặc định là 'Thỏa thuận'"
+                placeholder="Ví dụ: 100000"
+                disabled={isLoading}
               />
-            </div>
-
-            {/* Ghi chú */}
-            <div className="form-group">
-              <label htmlFor="note">Ghi chú</label>
-              <textarea
-                id="note"
-                name="note"
-                value={formData.note}
-                onChange={handleInputChange}
-                placeholder="Nhập ghi chú (nếu có)"
-                rows="4"
-              />
+              {errors.price && <p className="error">{errors.price}</p>}
             </div>
 
             {/* Nút tạo đơn */}
-            <button type="submit" className="create-order-button">
-              Tạo đơn
+            <button type="submit" className="create-order-button" disabled={isLoading}>
+              {isLoading ? 'Đang tạo đơn...' : 'Tạo đơn'}
             </button>
           </form>
         </div>
