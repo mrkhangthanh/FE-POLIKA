@@ -20,7 +20,7 @@ const CreateOrder = () => {
     city: '',
     district: '',
     ward: '',
-    country: '',
+    country: 'Vietnam',
     phone_number: '',
     price: '',
   });
@@ -124,7 +124,12 @@ const CreateOrder = () => {
     try {
       // Gọi API tạo đơn hàng
       const response = await createOrder(orderData);
-      console.log('Create Order Response:', response.data);
+      console.log('Create Order Response:', response);
+
+      // Kiểm tra địa chỉ trong response
+  if (response.order && response.order.address) {
+    console.log('Saved Address:', response.order.address);
+  }
 
       setMessage('Đơn hàng đã được tạo thành công!');
       setTimeout(() => {
