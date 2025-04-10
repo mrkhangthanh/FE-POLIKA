@@ -11,3 +11,4 @@ import Http from "./Http";
     export const getCustomerOrders = (config) => Http.get('/customer/orders', config);
     export const cancelOrder = (orderId, config) => Http.put(`/orders/${orderId}/cancel`, config);
     export const updateOrder = (orderId, data) => Http.put(`/orders/${orderId}`, data).then(response => response.data);;
+    export const getUserInfo = (data) => Http.get(`/user-info`, data);

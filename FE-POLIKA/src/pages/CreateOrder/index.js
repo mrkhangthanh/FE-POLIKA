@@ -1,8 +1,11 @@
+// customer/CreateOrder.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../share/components/Layout/Header';
 import BottomNav from '../../share/components/BottomNav';
-import { createOrder, getCategoryService } from '../../services/Api'; // Import API mới
+import { createOrder, getCategoryService } from '../../services/Api';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './CreateOrder.css';
 
 const CreateOrder = () => {
@@ -21,7 +24,7 @@ const CreateOrder = () => {
     district: '',
     ward: '',
     country: 'Vietnam',
-    phone_number: '',
+    phone_number: user?.phone_number || '', // Mặc định là số điện thoại từ user
     price: '',
   });
 
@@ -38,26 +41,25 @@ const CreateOrder = () => {
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/login', { state: { redirectTo: '/create-order' } });
+      return;
     }
-  }, [isLoggedIn, navigate]);
 
-  // Gọi API để lấy danh sách service_type khi component được mount
-  useEffect(() => {
+    // Gọi API để lấy danh sách service_type khi component được mount
     const fetchCategories = async () => {
       setIsLoadingCategories(true);
       try {
         const response = await getCategoryService();
-        setCategories(response.data.service_types); // Lưu danh sách service_types từ BE
+        setCategories(response.data.service_types || []);
       } catch (err) {
         console.error('Error fetching service types:', err);
-        setErrors({ general: 'Không thể tải danh sách dịch vụ. Vui lòng thử lại.' });
+        toast.error('Không thể tải danh sách dịch vụ. Vui lòng thử lại.');
       } finally {
         setIsLoadingCategories(false);
       }
     };
 
     fetchCategories();
-  }, []);
+  }, [isLoggedIn, navigate]);
 
   // Xử lý thay đổi input
   const handleInputChange = (e) => {
@@ -76,7 +78,7 @@ const CreateOrder = () => {
     setErrors({});
     setMessage('');
     setIsLoading(true);
-
+  
     // Validation
     const newErrors = {};
     if (!formData.service_type) newErrors.service_type = 'Vui lòng chọn danh mục dịch vụ';
@@ -96,13 +98,13 @@ const CreateOrder = () => {
     } else if (isNaN(formData.price) || parseFloat(formData.price) <= 0) {
       newErrors.price = 'Mức giá phải là số lớn hơn 0';
     }
-
+  
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       setIsLoading(false);
       return;
     }
-
+  
     // Chuẩn bị dữ liệu gửi lên BE
     const orderData = {
       service_type: formData.service_type,
@@ -117,21 +119,21 @@ const CreateOrder = () => {
       phone_number: formData.phone_number,
       price: parseFloat(formData.price),
     };
-
+  
     // Log dữ liệu gửi lên
     console.log('Order Data Sent:', orderData);
-
+  
     try {
       // Gọi API tạo đơn hàng
       const response = await createOrder(orderData);
       console.log('Create Order Response:', response);
-
+  
       // Kiểm tra địa chỉ trong response
-  if (response.order && response.order.address) {
-    console.log('Saved Address:', response.order.address);
-  }
-
-      setMessage('Đơn hàng đã được tạo thành công!');
+      if (response.data && response.data.order && response.data.order.address) {
+        console.log('Saved Address:', response.data.order.address);
+      }
+  
+      toast.success('Đơn hàng đã được tạo thành công!');
       setTimeout(() => {
         setIsLoading(false);
         navigate('/list-orders');
@@ -151,6 +153,7 @@ const CreateOrder = () => {
   return (
     <>
       <Header />
+      <ToastContainer autoClose={2000} />
       <div className="create-order-container">
         <div className="create-order-header">
           <h2>
@@ -289,6 +292,7 @@ const CreateOrder = () => {
             <div className="form-group">
               <label htmlFor="phone_number">
                 Số điện thoại <span className="required">*</span>
+                <span className="default-note"> (Mặc định từ tài khoản của bạn)</span>
               </label>
               <input
                 type="text"

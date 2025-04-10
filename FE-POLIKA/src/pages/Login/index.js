@@ -55,9 +55,9 @@ const Login = () => {
     }
 
     try {
-      console.log('Payload:', { identifier, password });
+      // console.log('Payload:', { identifier, password });
       const response = await login({ identifier, password });
-      console.log('Login response:', response.data);
+      // console.log('Login response:', response.data);
 
       setMessage('Đăng nhập thành công!');
       const { accessToken, user } = response.data;
@@ -70,7 +70,7 @@ const Login = () => {
       // Kiểm tra xem localStorage đã được lưu chưa
       const storedToken = localStorage.getItem('token');
       const storedUser = JSON.parse(localStorage.getItem('user'));
-      console.log('Stored in localStorage:', { storedToken, storedUser });
+      // console.log('Stored in localStorage:', { storedToken, storedUser });
 
       const allowedRoles = ['customer', 'technician'];
       if (!allowedRoles.includes(user.role)) {

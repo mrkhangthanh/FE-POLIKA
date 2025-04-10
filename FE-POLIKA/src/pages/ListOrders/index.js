@@ -497,9 +497,10 @@ const Orders = () => {
                       </p>
                     )}
                     {selectedOrder.description && (
-                      <p className="order-detail-item">
-                        <strong>Mô tả:</strong> {selectedOrder.description}
-                      </p>
+                     <div className="order-detail-item description">
+                     <strong>Mô tả:</strong>
+                     <span>{selectedOrder.description}</span>
+                   </div>
                     )}
                     {user.role === 'customer' && selectedOrder.status === 'pending' && (
                       <button className="edit-button" onClick={() => setIsEditing(true)}>

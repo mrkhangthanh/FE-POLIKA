@@ -8,7 +8,7 @@ const Http = axios.create({
 Http.interceptors.request.use(
     (config) => {
       const token = localStorage.getItem('token'); // Sử dụng accessToken
-      console.log('Auth Header:', token);
+      // console.log('Auth Header:', token);
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
