@@ -51,7 +51,7 @@ const Register = () => {
 
     try {
       //  [SỬA] Thêm log để kiểm tra dữ liệu trước khi gửi
-      console.log('Register payload:', { name, email, password, phone_number: phoneNumber, role });
+      // console.log('Register payload:', { name, email, password, phone_number: phoneNumber, role });
 
       const response = await register({
         name,
@@ -62,7 +62,7 @@ const Register = () => {
       });
 
       setMessage(response.data.message || 'Đăng ký thành công!');
-      console.log('Register successful:', response.data);
+      // console.log('Register successful:', response.data);
 
       setName('');
       setEmail('');

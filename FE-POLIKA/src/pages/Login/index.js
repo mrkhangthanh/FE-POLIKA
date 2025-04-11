@@ -4,6 +4,7 @@ import { login } from '../../services/Api';
 import Header from '../../share/components/Layout/Header';
 import Footer from '../../share/components/Layout/Footer';
 import BottomNav from '../../share/components/BottomNav';
+import { toast } from 'react-toastify';
 import './Login.css';
 
 const Login = () => {
@@ -27,17 +28,22 @@ const Login = () => {
     }
   }, [location]);
 
-  // Kiểm tra nếu người dùng đã đăng nhập
+  // Kiểm tra nếu người dùng đã đăng nhập (chỉ chạy một lần khi component mount)
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
     if (token && user) {
-      if (user.role === 'customer') {
-        navigate(location.state?.redirectTo || '/', { replace: true });
-      } else if (user.role === 'technician') {
+      const allowedRoles = ['customer', 'technician'];
+      if (allowedRoles.includes(user.role)) {
         navigate(location.state?.redirectTo || '/', { replace: true });
       } else if (user.role === 'admin') {
         navigate('/dashboard', { replace: true });
+      } else {
+        // Nếu vai trò không hợp lệ, xóa localStorage và ở lại trang đăng nhập
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('role');
+        setError('Chỉ khách hàng (customer) hoặc kỹ thuật viên (technician) mới có thể đăng nhập tại đây.');
       }
     }
   }, [navigate, location.state]);
@@ -55,26 +61,19 @@ const Login = () => {
     }
 
     try {
-      // console.log('Payload:', { identifier, password });
       const response = await login({ identifier, password });
-      // console.log('Login response:', response.data);
 
-      setMessage('Đăng nhập thành công!');
       const { accessToken, user } = response.data;
 
-      // Lưu vào localStorage và đảm bảo đồng bộ
+      // Lưu vào localStorage
       localStorage.setItem('token', accessToken);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('role', user.role);
 
-      // Kiểm tra xem localStorage đã được lưu chưa
-      const storedToken = localStorage.getItem('token');
-      const storedUser = JSON.parse(localStorage.getItem('user'));
-      // console.log('Stored in localStorage:', { storedToken, storedUser });
-
+      // Kiểm tra vai trò
       const allowedRoles = ['customer', 'technician'];
       if (!allowedRoles.includes(user.role)) {
-        setError('Chỉ khách hàng (customer) hoặc kỹ thuật viên (technician) mới có thể đăng nhập tại đây.');
+        setError('Chỉ khách hàng (customer) hoặc kỹ thuật viên (technician) mới có thể đăng nhập tại đây.');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('role');
@@ -82,15 +81,16 @@ const Login = () => {
         return;
       }
 
-      // Điều hướng sau khi đăng nhập thành công
+      // Hiển thị thông báo thành công
+      setMessage('Đăng nhập thành công!');
+      toast.success('Đăng nhập thành công!');
+
+      // Điều hướng ngay sau khi hiển thị toast
       setTimeout(() => {
-        if (user.role === 'customer') {
-          navigate(location.state?.redirectTo || '/', { replace: true });
-        } else if (user.role === 'technician') {
+        if (user.role === 'customer' || user.role === 'technician') {
           navigate(location.state?.redirectTo || '/', { replace: true });
         }
-        setIsLoading(false);
-      }, 100);
+      }, 900); // Delay 1 giây để toast hiển thị
     } catch (err) {
       console.error('Error details:', err);
       console.log('Error response:', err.response);
@@ -99,6 +99,8 @@ const Login = () => {
         err.response?.data?.message ||
         'Đăng nhập thất bại. Vui lòng thử lại.';
       setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
       setIsLoading(false);
     }
   };

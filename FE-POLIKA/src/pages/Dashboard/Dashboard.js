@@ -30,8 +30,8 @@ import {
   SystemConfig,
   Notifications,
   AccountSettings,
-  Products,
-  ProductCategories,
+  Service,
+  ServiceCategories,
   Promotions,
   Posts,
   PostCategories,
@@ -102,7 +102,7 @@ const Dashboard = () => {
   const handleMenuClick = (menu) => {
     setActiveMenu(menu);
   };
-
+  console.log('Active Menu:', activeMenu);
   const renderContent = () => {
     if (!canViewSubmenu(activeMenu)) {
       return <div className="content-section"><h3>Access Denied</h3><p>Bạn không có quyền truy cập mục này.</p></div>;
@@ -140,10 +140,10 @@ const Dashboard = () => {
         ) : (
           <div className="content-section"><p>Lỗi: Dữ liệu người dùng không hợp lệ.</p></div>
         );
-      case 'products':
-        return <Products />;
-      case 'product-categories':
-        return <ProductCategories />;
+      case 'Service':
+        return <Service />;
+      case 'service-categories':
+        return <ServiceCategories />;
       case 'promotions':
         return <Promotions />;
       case 'posts':

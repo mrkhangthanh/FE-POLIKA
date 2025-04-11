@@ -120,10 +120,10 @@ import {
                 />
               </span>
               <ul className={`submenu ${openGroups['quan-ly-san-pham-dich-vu'] ? 'open' : ''}`}>
-                {canViewSubmenu('products') && (
+                {canViewSubmenu('Service') && (
                   <li
-                    className={activeMenu === 'products' ? 'active' : ''}
-                    onClick={() => handleMenuClick('products')}
+                    className={activeMenu === 'Service' ? 'active' : ''}
+                    onClick={() => handleMenuClick('Service')}
                   >
                     <span>
                       <FaBox className="submenu-icon" />
@@ -131,10 +131,10 @@ import {
                     </span>
                   </li>
                 )}
-                {canViewSubmenu('product-categories') && (
+                {canViewSubmenu('service-categories') && (
                   <li
-                    className={activeMenu === 'product-categories' ? 'active' : ''}
-                    onClick={() => handleMenuClick('product-categories')}
+                    className={activeMenu === 'service-categories' ? 'active' : ''}
+                    onClick={() => handleMenuClick('service-categories')}
                   >
                     <span>
                       <FaTags className="submenu-icon" />

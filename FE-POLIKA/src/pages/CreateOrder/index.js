@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../share/components/Layout/Header';
 import BottomNav from '../../share/components/BottomNav';
-import { createOrder, getCategoryService } from '../../services/Api';
+import { createOrder, getCategoryService, getUserInfo } from '../../services/Api';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './CreateOrder.css';
@@ -24,7 +24,7 @@ const CreateOrder = () => {
     district: '',
     ward: '',
     country: 'Vietnam',
-    phone_number: user?.phone_number || '', // Mặc định là số điện thoại từ user
+    phone_number: user?.phone_number || '',
     price: '',
   });
 
@@ -44,7 +44,29 @@ const CreateOrder = () => {
       return;
     }
 
-    // Gọi API để lấy danh sách service_type khi component được mount
+    // Gọi API để lấy thông tin người dùng
+    const fetchUserInfo = async () => {
+      try {
+        const response = await getUserInfo();
+        const userInfo = response.user; // Đã sửa ở đây: response.user thay vì response.data.user
+        if (userInfo) {
+          setFormData((prev) => ({
+            ...prev,
+            phone_number: userInfo.phone_number || prev.phone_number,
+            street: userInfo.address?.street || '',
+            city: userInfo.address?.city || '',
+            district: userInfo.address?.district || '',
+            ward: userInfo.address?.ward || '',
+            country: userInfo.address?.country || 'Vietnam',
+          }));
+        }
+      } catch (err) {
+        console.error('Error fetching user info:', err);
+        toast.error('Không thể tải thông tin người dùng.');
+      }
+    };
+
+    // Gọi API để lấy danh sách service_type
     const fetchCategories = async () => {
       setIsLoadingCategories(true);
       try {
@@ -52,12 +74,13 @@ const CreateOrder = () => {
         setCategories(response.data.service_types || []);
       } catch (err) {
         console.error('Error fetching service types:', err);
-        toast.error('Không thể tải danh sách dịch vụ. Vui lòng thử lại.');
+        toast.error('Không thể tải danh sách dịch vụ.');
       } finally {
         setIsLoadingCategories(false);
       }
     };
 
+    fetchUserInfo();
     fetchCategories();
   }, [isLoggedIn, navigate]);
 
@@ -78,7 +101,7 @@ const CreateOrder = () => {
     setErrors({});
     setMessage('');
     setIsLoading(true);
-  
+
     // Validation
     const newErrors = {};
     if (!formData.service_type) newErrors.service_type = 'Vui lòng chọn danh mục dịch vụ';
@@ -98,13 +121,13 @@ const CreateOrder = () => {
     } else if (isNaN(formData.price) || parseFloat(formData.price) <= 0) {
       newErrors.price = 'Mức giá phải là số lớn hơn 0';
     }
-  
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       setIsLoading(false);
       return;
     }
-  
+
     // Chuẩn bị dữ liệu gửi lên BE
     const orderData = {
       service_type: formData.service_type,
@@ -119,20 +142,20 @@ const CreateOrder = () => {
       phone_number: formData.phone_number,
       price: parseFloat(formData.price),
     };
-  
+
     // Log dữ liệu gửi lên
     console.log('Order Data Sent:', orderData);
-  
+
     try {
       // Gọi API tạo đơn hàng
       const response = await createOrder(orderData);
       console.log('Create Order Response:', response);
-  
-      // Kiểm tra địa chỉ trong response
-      if (response.data && response.data.order && response.data.order.address) {
-        console.log('Saved Address:', response.data.order.address);
+
+      // Kiểm tra xem đây có phải lần đầu tạo đơn không
+      if (response.user?.isFirstOrder) {
+        toast.info('Địa chỉ của bạn đã được lưu để sử dụng cho các lần sau.');
       }
-  
+
       toast.success('Đơn hàng đã được tạo thành công!');
       setTimeout(() => {
         setIsLoading(false);

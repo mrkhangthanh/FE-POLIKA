@@ -23,6 +23,10 @@ import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import Orders from './pages/ListOrders'
 import CreateOrder from './pages/CreateOrder'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import  ServiceCategories  from './pages/Dashboard/Services/ServiceCategories'
+import  Service  from './pages/Dashboard/Services/Service'
 
 
 
@@ -31,6 +35,7 @@ const App = () => {
   return (
    <BrowserRouter>
       {/* <Layout> */}
+      <ToastContainer autoClose={2000} position="top-right" />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} /> 
@@ -45,6 +50,8 @@ const App = () => {
           <Route path='/product-details/' element= {<ProductDetail/>} />
           <Route path='/cart' element= {<ShoppingCart/>} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/service-categories" element={<ServiceCategories />} />
+          <Route path="/dashboard/service" element={<Service />} />
           <Route path="/user/:userId" element={ <UserDetail/>} />
           <Route path="/Don-Hang/:id"  />
         </Routes>
