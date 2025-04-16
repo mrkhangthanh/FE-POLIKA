@@ -1,5 +1,5 @@
 const mongoose = require('../../../common/init.myDB')();
-const ServiceType = require('../models/serviceType');
+const ServiceType = require('../../categoryService/models/serviceType');
 
 const orderSchema = new mongoose.Schema({
   customer_id: {
@@ -13,15 +13,10 @@ const orderSchema = new mongoose.Schema({
     default: null,
   },
   service_type: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId, // Thay đổi thành ObjectId
+    ref: 'ServiceType', // Tham chiếu đến collection ServiceType
     required: true,
-    validate: {
-      validator: async function (value) {
-        const serviceType = await ServiceType.findOne({ value });
-        return !!serviceType; // Trả về true nếu giá trị tồn tại trong ServiceType
-      },
-      message: 'Invalid service type',
-    },
+    index: true,
   },
   description: {
     type: String,

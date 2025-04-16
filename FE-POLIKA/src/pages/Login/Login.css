@@ -10,8 +10,8 @@
 body {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Đảm bảo body chiếm toàn bộ chiều cao màn hình */
-  background-color: #f5f5f5; /* Màu nền nhẹ nhàng */
+  min-height: 100vh;
+  background-color: #f5f5f5;
 }
 
 /* Đảm bảo nội dung chính (form) căn giữa */
@@ -21,20 +21,20 @@ body {
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   width: 400px;
-  margin: 150px auto; /* Căn giữa ngang, thêm margin trên dưới */
+  margin: 150px auto;
 }
 
 /* Định kiểu form */
 .login-form-lg {
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Khoảng cách giữa các phần tử */
+  gap: 15px;
 }
 
 /* Định kiểu tiêu đề */
 .login-form-lg h2 {
   text-align: center;
-  color: #ff5722; /* Màu đỏ cam */
+  color: #ff5722;
   margin-bottom: 30px;
 }
 
@@ -50,7 +50,7 @@ body {
   color: #333;
 }
 
-.input-group-lg input[type="text"], /* 🔴 Thêm type="text" để áp dụng cho input Số Điện Thoại hoặc Email */
+.input-group-lg input[type="text"],
 .input-group-lg input[type="email"],
 .input-group-lg input[type="password"] {
   width: 100%;
@@ -60,11 +60,27 @@ body {
   font-size: 16px;
 }
 
-.input-group-lg input[type="text"]:focus, /* 🔴 Thêm style focus cho type="text" */
+.input-group-lg input[type="text"]:focus,
 .input-group-lg input[type="email"]:focus,
 .input-group-lg input[type="password"]:focus {
-  border-color: #ff5722; /* Điểm nhấn đỏ cam khi focus */
+  border-color: #ff5722;
   outline: none;
+}
+
+/* <span style="color:red">[CHỈNH SỬA]</span>: Định kiểu thông báo lỗi */
+.error-message-lg {
+  color: #ff0000; /* Màu đỏ */
+  font-size: 14px;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Định kiểu thông báo thành công */
+.success-message-lg {
+  color: #28a745; /* Màu xanh lá */
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 10px;
 }
 
 /* Định kiểu checkbox */
@@ -91,7 +107,7 @@ body {
 .button-lg button {
   width: 100%;
   padding: 12px;
-  background-color: #ff5722; /* Màu đỏ cam */
+  background-color: #ff5722;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -101,7 +117,7 @@ body {
 }
 
 .button-lg button:hover {
-  background-color: #e64a19; /* Đậm hơn khi hover */
+  background-color: #e64a19;
 }
 
 /* Định kiểu liên kết đăng ký và quên mật khẩu */
@@ -126,5 +142,5 @@ body {
 
 /* Đảm bảo Footer không bị đè lên form */
 footer {
-  margin-top: auto; /* Đẩy footer xuống cuối trang */
+  margin-top: auto;
 }

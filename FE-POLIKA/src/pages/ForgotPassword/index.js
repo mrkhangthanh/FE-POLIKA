@@ -2,6 +2,7 @@ import React from 'react';
 import Header from '../../share/components/Layout/Header';
 import Footer from '../../share/components/Layout/Footer';
 import './ForgotPassword.css'; // Import file CSS riêng
+import BottomNav from '../../share/components/BottomNav';
 
 const ForgotPassword = () => {
   return (
@@ -28,6 +29,7 @@ const ForgotPassword = () => {
         </form>
       </div>
       <Footer />
+      <BottomNav />
     </>
   );
 };

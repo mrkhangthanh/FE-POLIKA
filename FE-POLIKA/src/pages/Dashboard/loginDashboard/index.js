@@ -36,8 +36,8 @@ const LoginDashboard = () => {
     }
 
     try {
-      console.log('Sending login request to:', `${BASE_API}/login`);
-      console.log('Payload:', { identifier, password });
+      // console.log('Sending login request to:', `${BASE_API}/login`);
+      // console.log('Payload:', { identifier, password });
 
       const response = await login({ identifier, password });
 

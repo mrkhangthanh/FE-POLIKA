@@ -40,6 +40,12 @@ import {
 import ErrorBoundary from '../Dashboard/ErrorBoundary';
 import './Dashboard.css';
 
+
+
+
+
+
+
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {

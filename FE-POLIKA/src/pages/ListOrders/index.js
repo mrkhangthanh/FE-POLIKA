@@ -290,7 +290,7 @@ const Orders = () => {
                       <strong>Ngày:</strong> {formatDate(order.created_at)}
                     </p>
                     <p className="order-action">
-                      <strong>Hành động:</strong> Đặt dịch vụ {order.service_type}
+                      <strong>Hành động:</strong> Đặt dịch vụ {order.service_type.label}
                     </p>
                     <p className="order-status">
                       <strong>Trạng thái:</strong>{' '}
@@ -459,7 +459,7 @@ const Orders = () => {
                       <strong>Ngày:</strong> {formatDate(selectedOrder.created_at)}
                     </p>
                     <p className="order-detail-item">
-                      <strong>Hành động:</strong> Đặt dịch vụ {selectedOrder.service_type}
+                      <strong>Hành động:</strong> Đặt dịch vụ {selectedOrder.service_type.label}
                     </p>
                     <p className="order-detail-item">
                       <strong>Trạng thái:</strong>{' '}

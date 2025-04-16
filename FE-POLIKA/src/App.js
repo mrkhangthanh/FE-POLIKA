@@ -27,6 +27,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import  ServiceCategories  from './pages/Dashboard/Services/ServiceCategories'
 import  Service  from './pages/Dashboard/Services/Service'
+import ListOrdersHome from './pages/ListOrders-Home'
 
 
 
@@ -45,6 +46,7 @@ const App = () => {
           <Route path="/admin-login" element={<LoginDashboard/>} />
           <Route path="/settings" element={<Settings/>} />
           <Route path="/list-Orders" element={<Orders />} />
+          <Route path="/list-Orders-Home" element={<ListOrdersHome/>} />
           <Route path="/create-order" element={<CreateOrder />} />
           <Route path="/forgot-password" element={<ForgotPassword/>} />
           <Route path='/product-details/' element= {<ProductDetail/>} />

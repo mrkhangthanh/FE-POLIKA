@@ -278,6 +278,7 @@
     font-size: 14px;
     margin-left: 10px;
   }
+
   
   .cancel-button:hover {
     background-color: #d9363e;
@@ -385,7 +386,9 @@
     color: white;
     border: none;
     border-radius: 4px;
+    width: 50%;
     cursor: pointer;
+    margin: auto;
     font-size: 14px;
     transition: background-color 0.3s;
   }
@@ -446,16 +449,7 @@
     background-color: #73d13d;
   }
   
-  .cancel-button {
-    padding: 8px 16px;
-    background-color: #ff4d4f;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s;
-  }
+  
   
   .cancel-button:hover {
     background-color: #d9363e;
@@ -589,7 +583,7 @@
     }
 
     .order-item {
-        padding: 10px;
+        padding: 3px;
     }
 
     .order-details p {

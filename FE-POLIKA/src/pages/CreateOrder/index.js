@@ -1,63 +1,57 @@
-// customer/CreateOrder.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../share/components/Layout/Header';
 import BottomNav from '../../share/components/BottomNav';
-import { createOrder, getCategoryService, getUserInfo } from '../../services/Api';
+import { createOrder, getCategoryService, getUserInfo, getCustomerOrders } from '../../services/Api';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import socket from '../../utils/Socket';
 import './CreateOrder.css';
 
 const CreateOrder = () => {
   const navigate = useNavigate();
 
-  // Lấy thông tin người dùng từ localStorage
   const user = JSON.parse(localStorage.getItem('user'));
   const isLoggedIn = localStorage.getItem('token') && user && (user.role === 'customer' || user.role === 'technician');
 
-  // State để quản lý form
+  // Khởi tạo formData với địa chỉ từ user trong localStorage (nếu có)
   const [formData, setFormData] = useState({
     service_type: '',
     description: '',
-    street: '',
-    city: '',
-    district: '',
-    ward: '',
-    country: 'Vietnam',
+    street: user?.address?.street || '',
+    city: user?.address?.city || '',
+    district: user?.address?.district || '',
+    ward: user?.address?.ward || '',
+    country: user?.address?.country || 'Vietnam',
     phone_number: user?.phone_number || '',
     price: '',
   });
 
-  // State để quản lý danh sách service_type từ BE
   const [categories, setCategories] = useState([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
-
-  // State để quản lý lỗi và thông báo
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Nếu chưa đăng nhập, điều hướng về trang login
   useEffect(() => {
     if (!isLoggedIn) {
       navigate('/login', { state: { redirectTo: '/create-order' } });
       return;
     }
 
-    // Gọi API để lấy thông tin người dùng
     const fetchUserInfo = async () => {
       try {
-        const response = await getUserInfo();
-        const userInfo = response.user; // Đã sửa ở đây: response.user thay vì response.data.user
+        const userInfo = await getUserInfo();
+        console.log('User Info from API:', userInfo); // Log để kiểm tra dữ liệu trả về
         if (userInfo) {
           setFormData((prev) => ({
             ...prev,
             phone_number: userInfo.phone_number || prev.phone_number,
-            street: userInfo.address?.street || '',
-            city: userInfo.address?.city || '',
-            district: userInfo.address?.district || '',
-            ward: userInfo.address?.ward || '',
-            country: userInfo.address?.country || 'Vietnam',
+            street: userInfo.address?.street || prev.street,
+            city: userInfo.address?.city || prev.city,
+            district: userInfo.address?.district || prev.district,
+            ward: userInfo.address?.ward || prev.ward,
+            country: userInfo.address?.country || prev.country || 'Vietnam',
           }));
         }
       } catch (err) {
@@ -66,12 +60,21 @@ const CreateOrder = () => {
       }
     };
 
-    // Gọi API để lấy danh sách service_type
     const fetchCategories = async () => {
       setIsLoadingCategories(true);
       try {
         const response = await getCategoryService();
-        setCategories(response.data.service_types || []);
+        const serviceTypes = response.data.service_types || [];
+
+        const otherCategory = serviceTypes.find((category) => category.label === 'Khác...');
+        const otherCategories = serviceTypes.filter((category) => category.label !== 'Khác...');
+        const sortedCategories = [...otherCategories];
+        if (otherCategory) {
+          sortedCategories.push(otherCategory);
+        }
+
+        setCategories(sortedCategories);
+        console.log('Service Types from API:', sortedCategories);
       } catch (err) {
         console.error('Error fetching service types:', err);
         toast.error('Không thể tải danh sách dịch vụ.');
@@ -80,31 +83,77 @@ const CreateOrder = () => {
       }
     };
 
+    socket.on('order_update', (orders) => {
+      console.log('Received order_update:', orders);
+      toast.info('Danh sách đơn hàng đã được cập nhật!');
+    });
+
     fetchUserInfo();
     fetchCategories();
+
+    return () => {
+      socket.off('order_update');
+    };
   }, [isLoggedIn, navigate]);
 
-  // Xử lý thay đổi input
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Xóa lỗi khi người dùng nhập
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
     }
   };
 
-  // Xử lý submit form
+  const retryRequest = async (fn, orderData, retries = 3, delay = 1000) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const response = await fn();
+        return response;
+      } catch (err) {
+        const config = {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        };
+        const recentOrdersResponse = await getCustomerOrders(config);
+        const recentOrders = recentOrdersResponse.data || [];
+
+        const isDuplicate = recentOrders.some((order) => {
+          return (
+            order.service_type === orderData.service_type &&
+            order.customer_id === user._id &&
+            new Date(order.created_at) > new Date(Date.now() - 5 * 60 * 1000)
+          );
+        });
+
+        if (isDuplicate) {
+          console.log('Order already created, skipping retry.');
+          toast.success('Đơn hàng đã được tạo trước đó.');
+          setTimeout(() => {
+            setIsLoading(false);
+            navigate('/list-orders');
+          }, 1000);
+          return;
+        }
+
+        if (i === retries - 1) throw err;
+        console.log(`Retrying request (${i + 1}/${retries})...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
     setMessage('');
     setIsLoading(true);
 
-    // Validation
     const newErrors = {};
-    if (!formData.service_type) newErrors.service_type = 'Vui lòng chọn danh mục dịch vụ';
+    if (!formData.service_type) {
+      newErrors.service_type = 'Vui lòng chọn loại dịch vụ để gọi thợ.';
+    }
     if (!formData.description) newErrors.description = 'Vui lòng nhập mô tả vấn đề';
     if (!formData.street) newErrors.street = 'Vui lòng nhập số nhà, đường';
     if (!formData.city) newErrors.city = 'Vui lòng nhập thành phố';
@@ -128,9 +177,20 @@ const CreateOrder = () => {
       return;
     }
 
-    // Chuẩn bị dữ liệu gửi lên BE
+    const serviceTypeValue = formData.service_type;
+    const serviceTypeMapping = {
+      'dien-nuoc': 'DienNuoc',
+      'don-ve-sinh': 'DonVeSinh',
+      'sua-may-giat': 'SuaMayGiat',
+      'dieu-hoa': 'DieuHoa',
+      'chong-tham': 'ChongTham',
+      'tho-xay-dung': 'ThoXayDung',
+      'other': 'other',
+    };
+    const formattedServiceType = serviceTypeMapping[serviceTypeValue] || serviceTypeValue;
+
     const orderData = {
-      service_type: formData.service_type,
+      service_type: formattedServiceType,
       description: formData.description,
       address: {
         street: formData.street,
@@ -143,20 +203,19 @@ const CreateOrder = () => {
       price: parseFloat(formData.price),
     };
 
-    // Log dữ liệu gửi lên
     console.log('Order Data Sent:', orderData);
 
     try {
-      // Gọi API tạo đơn hàng
-      const response = await createOrder(orderData);
+      const response = await retryRequest(() => createOrder(orderData), orderData, 3, 1000);
+      if (!response) return;
+
       console.log('Create Order Response:', response);
 
-      // Kiểm tra xem đây có phải lần đầu tạo đơn không
       if (response.user?.isFirstOrder) {
         toast.info('Địa chỉ của bạn đã được lưu để sử dụng cho các lần sau.');
       }
 
-      toast.success('Đơn hàng đã được tạo thành công!');
+      toast.success('Đơn hàng đã được tạo thành công! Thông báo đã được gửi đến các thợ phù hợp.');
       setTimeout(() => {
         setIsLoading(false);
         navigate('/list-orders');
@@ -165,8 +224,9 @@ const CreateOrder = () => {
       console.error('Error creating order:', err);
       console.log('Error Response Data:', err.response?.data);
       const errorMessage =
+        err.response?.data?.error ||
         err.response?.data?.message ||
-        err.message ||
+        err.response?.data?.details ||
         'Tạo đơn hàng thất bại. Vui lòng thử lại.';
       setErrors({ general: errorMessage });
       setIsLoading(false);
@@ -187,14 +247,12 @@ const CreateOrder = () => {
 
         <div className="create-order-section">
           <form onSubmit={handleSubmit}>
-            {/* Thông báo lỗi chung hoặc thành công */}
             {errors.general && <p className="error">{errors.general}</p>}
             {message && <p className="success">{message}</p>}
 
-            {/* Danh mục dịch vụ (service_type) */}
             <div className="form-group">
               <label htmlFor="service_type">
-                Danh mục dịch vụ <span className="required">*</span>
+                Loại dịch vụ cần gọi thợ <span className="required">*</span>
               </label>
               <select
                 id="service_type"
@@ -203,7 +261,7 @@ const CreateOrder = () => {
                 onChange={handleInputChange}
                 disabled={isLoading || isLoadingCategories}
               >
-                <option value="">{isLoadingCategories ? 'Đang tải...' : 'Chọn danh mục'}</option>
+                <option value="">{isLoadingCategories ? 'Đang tải...' : 'Chọn loại dịch vụ'}</option>
                 {categories.map((category) => (
                   <option key={category.value} value={category.value}>
                     {category.label}
@@ -213,7 +271,6 @@ const CreateOrder = () => {
               {errors.service_type && <p className="error">{errors.service_type}</p>}
             </div>
 
-            {/* Mô tả vấn đề (description) */}
             <div className="form-group">
               <label htmlFor="description">
                 Mô tả vấn đề <span className="required">*</span>
@@ -230,7 +287,6 @@ const CreateOrder = () => {
               {errors.description && <p className="error">{errors.description}</p>}
             </div>
 
-            {/* Địa chỉ (address) */}
             <div className="form-group">
               <label htmlFor="street">
                 Số nhà, Đường <span className="required">*</span>
@@ -311,7 +367,6 @@ const CreateOrder = () => {
               {errors.country && <p className="error">{errors.country}</p>}
             </div>
 
-            {/* Số điện thoại (phone_number) */}
             <div className="form-group">
               <label htmlFor="phone_number">
                 Số điện thoại <span className="required">*</span>
@@ -329,7 +384,6 @@ const CreateOrder = () => {
               {errors.phone_number && <p className="error">{errors.phone_number}</p>}
             </div>
 
-            {/* Mức giá (price) */}
             <div className="form-group">
               <label htmlFor="price">
                 Mức giá (VND) <span className="required">*</span>
@@ -346,7 +400,6 @@ const CreateOrder = () => {
               {errors.price && <p className="error">{errors.price}</p>}
             </div>
 
-            {/* Nút tạo đơn */}
             <button type="submit" className="create-order-button" disabled={isLoading}>
               {isLoading ? 'Đang tạo đơn...' : 'Tạo đơn'}
             </button>
