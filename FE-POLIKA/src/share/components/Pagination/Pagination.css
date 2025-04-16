@@ -2,42 +2,112 @@
 .pagination {
   display: flex;
   justify-content: center;
+  align-items: center;
   margin-top: 20px;
-  gap: 5px;
+  gap: 4px; /* Khoảng cách nhỏ giữa các nút */
+  flex-wrap: wrap; /* Cho phép xuống dòng trên thiết bị nhỏ */
 }
 
 .pagination button {
-  padding: 5px 10px;
-  border: 1px solid #ccc;
+  border: none;
   border-radius: 4px;
-  background: #fff;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: 14px; /* Kích thước chữ nhỏ gọn */
+  transition: all 0.2s ease;
 }
 
+/* Style cho các nút số trang */
 .pagination-button {
-  padding: 5px 10px;
-  border: 1px solid #ccc;
+  width: 28px; /* Kích thước nhỏ gọn */
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff; /* Nền trắng */
+  color: #333;
+  border: 1px solid #ddd; /* Viền xám nhạt */
   border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.pagination-button.active {
-  background: #808080 !important;
-  color: #fff;
-  border-color: #666;
+  font-weight: 400;
 }
 
 .pagination-button:hover:not(.active) {
-  background: #e0e0e0; /* Màu xám nhạt khi hover */
+  background: #f0f0f0; /* Hiệu ứng hover nhạt */
 }
 
-.pagination-ellipsis {
-  padding: 5px 10px;
-  font-size: 14px;
+.pagination-button.active {
+  border: 2px solid #007bff; /* Viền xanh đậm cho trang hiện tại */
+  background: #fff; /* Giữ nền trắng */
+  color: #007bff; /* Chữ màu xanh */
+  font-weight: 500;
+}
+
+/* Style cho nút "Trang đầu", "Trang trước", "Trang sau", "Trang cuối" */
+.pagination-nav {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   color: #333;
+  font-weight: 400;
+}
+
+.pagination-nav:hover {
+  background: #f0f0f0;
+}
+
+/* Style cho dấu "..." */
+.pagination-ellipsis {
+  display: flex;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+}
+
+/* Responsive Design */
+
+/* Tablet (dưới 768px) */
+@media (max-width: 768px) {
+  .pagination {
+    gap: 3px;
+  }
+
+  .pagination-button,
+  .pagination-nav {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+
+  .pagination-ellipsis {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+}
+
+/* Mobile (dưới 480px) */
+@media (max-width: 480px) {
+  .pagination {
+    gap: 2px;
+  }
+
+  .pagination-button,
+  .pagination-nav {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .pagination-ellipsis {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
 }

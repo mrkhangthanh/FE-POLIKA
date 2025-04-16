@@ -1,5 +1,5 @@
 import React from 'react';
-import './Pagination.css'; // Import CSS cho phân trang
+import './Pagination.css';
 
 const RenderPagination = ({ currentPage, totalPages, onPageChange }) => {
   const pages = [];
@@ -43,9 +43,26 @@ const RenderPagination = ({ currentPage, totalPages, onPageChange }) => {
 
   return (
     <div className="pagination">
+      {/* Nút "Trang đầu" */}
+      {currentPage > 1 && (
+        <button
+          onClick={() => onPageChange(1)}
+          className="pagination-nav first"
+          title="Trang đầu"
+        >
+          «
+        </button>
+      )}
+
       {/* Nút "Trang trước" */}
       {currentPage > 1 && (
-        <button onClick={() => onPageChange(currentPage - 1)}>Trang trước</button>
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          className="pagination-nav prev"
+          title="Trang trước"
+        >
+          ‹
+        </button>
       )}
 
       {/* Hiển thị các số trang */}
@@ -65,9 +82,26 @@ const RenderPagination = ({ currentPage, totalPages, onPageChange }) => {
         )
       )}
 
+      {/* Nút "Trang sau" */}
+      {currentPage < totalPages && (
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          className="pagination-nav next"
+          title="Trang sau"
+        >
+          ›
+        </button>
+      )}
+
       {/* Nút "Trang cuối" */}
       {currentPage < totalPages && (
-        <button onClick={() => onPageChange(totalPages)}>Trang cuối</button>
+        <button
+          onClick={() => onPageChange(totalPages)}
+          className="pagination-nav last"
+          title="Trang cuối"
+        >
+          »
+        </button>
       )}
     </div>
   );

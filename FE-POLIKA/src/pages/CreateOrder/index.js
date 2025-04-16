@@ -12,7 +12,8 @@ const CreateOrder = () => {
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem('user'));
-  const isLoggedIn = localStorage.getItem('token') && user && (user.role === 'customer' || user.role === 'technician');
+  const token = localStorage.getItem('token');
+  const isLoggedIn = token && user && (user.role === 'customer' || user.role === 'technician');
 
   // Khởi tạo formData với địa chỉ từ user trong localStorage (nếu có)
   const [formData, setFormData] = useState({
@@ -42,7 +43,7 @@ const CreateOrder = () => {
     const fetchUserInfo = async () => {
       try {
         const userInfo = await getUserInfo();
-        console.log('User Info from API:', userInfo); // Log để kiểm tra dữ liệu trả về
+        console.log('User Info from API:', userInfo);
         if (userInfo) {
           setFormData((prev) => ({
             ...prev,
@@ -56,7 +57,14 @@ const CreateOrder = () => {
         }
       } catch (err) {
         console.error('Error fetching user info:', err);
-        toast.error('Không thể tải thông tin người dùng.');
+        if (err.response && err.response.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+          navigate('/login', { state: { redirectTo: '/create-order' } });
+        } else {
+          toast.error('Không thể tải thông tin người dùng.');
+        }
       }
     };
 
@@ -111,30 +119,40 @@ const CreateOrder = () => {
         const response = await fn();
         return response;
       } catch (err) {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        };
-        const recentOrdersResponse = await getCustomerOrders(config);
-        const recentOrders = recentOrdersResponse.data || [];
+        try {
+          const config = {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          };
+          const recentOrdersResponse = await getCustomerOrders(config);
+          console.log('Recent Orders Response:', recentOrdersResponse);
 
-        const isDuplicate = recentOrders.some((order) => {
-          return (
-            order.service_type === orderData.service_type &&
-            order.customer_id === user._id &&
-            new Date(order.created_at) > new Date(Date.now() - 5 * 60 * 1000)
-          );
-        });
+          // Kiểm tra nếu recentOrdersResponse.data không phải là mảng
+          const recentOrders = Array.isArray(recentOrdersResponse.data) ? recentOrdersResponse.data : [];
+          console.log('Recent Orders:', recentOrders);
 
-        if (isDuplicate) {
-          console.log('Order already created, skipping retry.');
-          toast.success('Đơn hàng đã được tạo trước đó.');
-          setTimeout(() => {
-            setIsLoading(false);
-            navigate('/list-orders');
-          }, 1000);
-          return;
+          const isDuplicate = recentOrders.some((order) => {
+            return (
+              order.service_type?.value === orderData.service_type && // So sánh với service_type.value
+              order.customer_id === user._id &&
+              new Date(order.created_at) > new Date(Date.now() - 5 * 60 * 1000)
+            );
+          });
+
+          if (isDuplicate) {
+            console.log('Order already created, skipping retry.');
+            toast.success('Đơn hàng đã được tạo trước đó.');
+            setTimeout(() => {
+              setIsLoading(false);
+              navigate('/list-orders');
+            }, 1000);
+            return;
+          }
+        } catch (retryErr) {
+          console.error('Error fetching recent orders:', retryErr);
+          toast.error('Không thể kiểm tra đơn hàng trùng lặp. Vui lòng thử lại.');
+          throw retryErr; // Ném lỗi để dừng retry
         }
 
         if (i === retries - 1) throw err;
@@ -177,20 +195,16 @@ const CreateOrder = () => {
       return;
     }
 
-    const serviceTypeValue = formData.service_type;
-    const serviceTypeMapping = {
-      'dien-nuoc': 'DienNuoc',
-      'don-ve-sinh': 'DonVeSinh',
-      'sua-may-giat': 'SuaMayGiat',
-      'dieu-hoa': 'DieuHoa',
-      'chong-tham': 'ChongTham',
-      'tho-xay-dung': 'ThoXayDung',
-      'other': 'other',
-    };
-    const formattedServiceType = serviceTypeMapping[serviceTypeValue] || serviceTypeValue;
+    // Tìm category được chọn từ categories
+    const selectedCategory = categories.find((category) => category.value === formData.service_type);
+    if (!selectedCategory) {
+      setErrors({ service_type: 'Dịch vụ không hợp lệ. Vui lòng chọn lại.' });
+      setIsLoading(false);
+      return;
+    }
 
     const orderData = {
-      service_type: formattedServiceType,
+      service_type: selectedCategory.value, // Gửi value (chuỗi) thay vì _id
       description: formData.description,
       address: {
         street: formData.street,
@@ -263,7 +277,7 @@ const CreateOrder = () => {
               >
                 <option value="">{isLoadingCategories ? 'Đang tải...' : 'Chọn loại dịch vụ'}</option>
                 {categories.map((category) => (
-                  <option key={category.value} value={category.value}>
+                  <option key={category._id} value={category.value}>
                     {category.label}
                   </option>
                 ))}

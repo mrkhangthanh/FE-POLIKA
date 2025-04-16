@@ -1,0 +1,128 @@
+/* Reset mặc định để tránh xung đột */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Căn giữa form trên toàn màn hình bằng Flexbox */
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Đảm bảo body chiếm toàn bộ chiều cao màn hình */
+    background-color: #f5f5f5; /* Màu nền nhẹ nhàng */
+  }
+  
+  /* Đảm bảo nội dung chính (form) căn giữa */
+  .login-container-lg {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    margin: 150px auto; /* Căn giữa ngang, thêm margin trên dưới */
+  }
+  
+  /* Định kiểu form */
+  .login-form-lg {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Khoảng cách giữa các phần tử */
+  }
+  
+  /* Định kiểu tiêu đề */
+  .login-form-lg h2 {
+    text-align: center;
+    color: #ff5722; /* Màu đỏ cam */
+    margin-bottom: 30px;
+  }
+  
+  /* Định kiểu input group */
+  .input-group-lg {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .input-group-lg label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+  }
+  
+  .input-group-lg input[type="email"],
+  .input-group-lg input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .input-group-lg input[type="email"]:focus,
+  .input-group-lg input[type="password"]:focus {
+    border-color: #ff5722; /* Điểm nhấn đỏ cam khi focus */
+    outline: none;
+  }
+  
+  /* Định kiểu checkbox */
+  .checkbox-group-lg {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .checkbox-group-lg input[type="checkbox"] {
+    margin-right: 5px;
+  }
+  
+  .checkbox-group-lg label {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  /* Định kiểu nút */
+  .button-lg {
+    text-align: center;
+  }
+  
+  .button-lg button {
+    width: 100%;
+    padding: 12px;
+    background-color: #ff5722; /* Màu đỏ cam */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .button-lg button:hover {
+    background-color: #e64a19; /* Đậm hơn khi hover */
+  }
+  
+  /* Định kiểu liên kết đăng ký và quên mật khẩu */
+  .register-link-lg,
+  .forgot-password-lg {
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+    margin-top: 10px;
+  }
+  
+  .register-link-lg a,
+  .forgot-password-lg a {
+    color: #ff5722;
+    text-decoration: none;
+  }
+  
+  .register-link-lg a:hover,
+  .forgot-password-lg a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Đảm bảo Footer không bị đè lên form */
+  footer {
+    margin-top: auto; /* Đẩy footer xuống cuối trang */
+  }

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getPublicOrders, getCategoryService } from '../../services/Api'; // Thêm getCategoryService
-import RenderPagination from '../../share/components/Pagination/renderPagination';
-import socket from '../../utils/Socket'; // Import instance Socket.IO từ Socket.js
+import { getPublicOrders, getCategoryService } from '../../services/Api';
+import socket from '../../utils/Socket';
 import './listOrdersHome.css';
 
 const ListOrdersHome = () => {
@@ -11,30 +10,30 @@ const ListOrdersHome = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newMessage, setNewMessage] = useState('');
-  const [chatMessages, setChatMessages] = useState([]); // State để lưu tin nhắn chat
+  const [chatMessages, setChatMessages] = useState([]);
   const [newOrderIds, setNewOrderIds] = useState(new Set());
   const [serviceTypes, setServiceTypes] = useState([]);
   const [fieldFilter, setFieldFilter] = useState('');
   const [areaFilter, setAreaFilter] = useState('');
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [pagination, setPagination] = useState({
-    totalRows: 0,
-    totalPages: 0,
-    currentPage: 1,
-    hasNext: false,
-    hasPrev: false,
-  });
+  const [hasMore, setHasMore] = useState(true);
+  const [totalRows, setTotalRows] = useState(0);
 
   const userId = localStorage.getItem('userId') || 'worker_123';
 
-  // Lấy danh sách service types từ API
   useEffect(() => {
     const fetchServiceTypes = async () => {
       try {
-        const response = await getCategoryService(); // Sử dụng getCategoryService từ Api.js
+        const response = await getCategoryService();
         if (response.data.success) {
-          setServiceTypes(response.data.service_types || []);
+          const fetchedServiceTypes = response.data.service_types || [];
+          const sortedServiceTypes = fetchedServiceTypes.sort((a, b) => {
+            if (a.label === 'Khác...') return 1;
+            if (b.label === 'Khác...') return -1;
+            return a.label.localeCompare(b.label);
+          });
+          setServiceTypes(sortedServiceTypes);
         }
       } catch (err) {
         console.error('Error fetching service types:', err);
@@ -43,41 +42,47 @@ const ListOrdersHome = () => {
     fetchServiceTypes();
   }, []);
 
-  const fetchOrders = async (currentPage) => {
+  const fetchOrders = async (currentPage, append = false) => {
     try {
       setLoading(true);
       const config = {
         params: {
           page: currentPage,
           limit: limit,
-          service_type: fieldFilter || undefined, // Gửi service_type dưới dạng label
+          service_type: fieldFilter || undefined,
           'address.city': areaFilter || undefined,
         },
       };
       const response = await getPublicOrders(config);
       if (response.data.success) {
-        setOrders(response.data.orders || []);
-        setPagination({
-          totalRows: response.data.pagination?.totalRows || 0,
-          totalPages: response.data.pagination?.totalPages || 0,
-          currentPage: currentPage,
-          hasNext: response.data.pagination?.hasNext || false,
-          hasPrev: response.data.pagination?.hasPrev || false,
-        });
+        const newOrders = response.data.orders || [];
+        if (append) {
+          setOrders((prevOrders) => [...prevOrders, ...newOrders]);
+        } else {
+          setOrders(newOrders);
+        }
+        const total = response.data.pagination?.totalRows || 0;
+        setTotalRows(total);
+        setHasMore(currentPage * limit < total);
       } else {
         setError('Không thể lấy dữ liệu đơn hàng.');
+        setHasMore(false);
       }
     } catch (err) {
       setError('Đã có lỗi xảy ra: ' + (err.message || 'Unknown error'));
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchOrders(page);
+    setPage(1);
+    setOrders([]);
+    fetchOrders(1, false);
+  }, [fieldFilter, areaFilter]);
 
-    // Lắng nghe sự kiện order_update từ Socket.IO để cập nhật danh sách đơn hàng
+  useEffect(() => {
     socket.on('order_update', (updatedOrders) => {
       console.log('Received order_update:', updatedOrders);
       if (updatedOrders.length > 0) {
@@ -90,40 +95,28 @@ const ListOrdersHome = () => {
         const newOrderIdsSet = new Set(newOrders.map((order) => order._id));
         setNewOrderIds(newOrderIdsSet);
         setOrders(updatedOrders);
-        setPagination((prev) => ({
-          ...prev,
-          totalRows: updatedOrders.length,
-          totalPages: Math.ceil(updatedOrders.length / limit),
-          hasNext: page * limit < updatedOrders.length,
-          hasPrev: (page - 1) * limit > 0,
-        }));
+        setTotalRows(updatedOrders.length);
+        setHasMore(page * limit < updatedOrders.length);
       }
     });
 
-    // Tham gia room của user
     socket.emit('join', userId);
 
     return () => {
       socket.off('order_update');
     };
-  }, [page, fieldFilter, areaFilter]);
+  }, [page, limit]);
 
   useEffect(() => {
     if (selectedOrder) {
-      // Tham gia room chat của đơn hàng
       socket.emit('joinChatRoom', { orderId: selectedOrder._id, userId });
-
-      // Lắng nghe tin nhắn mới
       socket.on('newMessage', (message) => {
         setChatMessages((prevMessages) => [...prevMessages, message]);
       });
-
-      // Xóa tin nhắn cũ khi tham gia room mới
       setChatMessages([]);
     }
 
     return () => {
-      // Rời room chat khi đóng modal
       if (selectedOrder) {
         socket.emit('leaveChatRoom', { orderId: selectedOrder._id, userId });
       }
@@ -159,8 +152,10 @@ const ListOrdersHome = () => {
     setSelectedOrder(null);
   };
 
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchOrders(nextPage, true);
   };
 
   const formatDate = (dateString) => {
@@ -194,10 +189,9 @@ const ListOrdersHome = () => {
 
   const areas = ['Hà Nội', 'TP. Hồ Chí Minh', 'Đà Nẵng', 'N/A'];
 
-  // Hàm xử lý thay đổi bộ lọc lĩnh vực
   const handleFieldFilterChange = (e) => {
     const selectedLabel = e.target.value;
-    setFieldFilter(selectedLabel || ''); // Lưu trực tiếp label thay vì _id
+    setFieldFilter(selectedLabel || '');
   };
 
   return (
@@ -237,75 +231,85 @@ const ListOrdersHome = () => {
         </div>
       </div>
 
-      {loading ? (
+      {loading && orders.length === 0 ? (
         <div className="loading-spinner"></div>
       ) : error ? (
         <p className="error">{error}</p>
       ) : orders.length === 0 ? (
         <p>Chưa có dữ liệu đơn hàng.</p>
       ) : (
-        <>
-          <div className="orders-table-wrapper">
-            <table className="orders-table">
-              <thead>
-                <tr>
-                  <th>Người đăng</th>
-                  <th>Giá</th>
-                  <th>Lĩnh vực</th>
-                  <th>Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr
-                    key={order._id}
-                    className={newOrderIds.has(order._id) ? 'new-order' : ''}
-                  >
-                    <td>
-                      <div className="user-info">
-                        <span className="user-name" title={order.customer_id?.name || 'N/A'}>
-                          {truncateName(order.customer_id?.name)}
-                        </span>
-                        <span className="user-date">
-                          {order.created_at ? formatDate(order.created_at) : 'N/A'}
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="price-info">
-                        <span className="price">
-                          {order.total_amount
-                            ? order.total_amount.toLocaleString('vi-VN') + ' VNĐ'
-                            : 'N/A'}
-                        </span>
-                        <span
-                          className={`status status-${order.status?.toLowerCase() || 'unknown'}`}
-                        >
-                          {order.status || 'N/A'}
-                        </span>
-                      </div>
-                    </td>
-                    <td>{order.service_type?.label || 'N/A'}</td>
-                    <td>
-                      <button
-                        className="details-btn"
-                        onClick={() => handleViewDetails(order)}
+        <div className="orders-table-wrapper">
+          <table className="orders-table">
+            <thead>
+              <tr>
+                <th>Người đăng</th>
+                <th>Giá</th>
+                <th>Lĩnh vực</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr
+                  key={order._id}
+                  className={newOrderIds.has(order._id) ? 'new-order' : ''}
+                >
+                  <td>
+                    <div className="user-info">
+                      <span className="user-name" title={order.customer_id?.name || 'N/A'}>
+                        {truncateName(order.customer_id?.name)}
+                      </span>
+                      <span className="user-date">
+                        {order.created_at ? formatDate(order.created_at) : 'N/A'}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="price-info">
+                      <span className="price">
+                        {order.total_amount
+                          ? order.total_amount.toLocaleString('vi-VN') + ' VNĐ'
+                          : 'N/A'}
+                      </span>
+                      <span
+                        className={`status status-${order.status?.toLowerCase() || 'unknown'}`}
                       >
-                        Chi tiết
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        {order.status || 'N/A'}
+                      </span>
+                    </div>
+                  </td>
+                  <td>{order.service_type?.label || 'N/A'}</td>
+                  <td>
+                    <button
+                      className="details-btn"
+                      onClick={() => handleViewDetails(order)}
+                    >
+                      Chi tiết
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-          <RenderPagination
-            currentPage={page}
-            totalPages={pagination.totalPages}
-            onPageChange={handlePageChange}
-          />
-        </>
+          {/* Nút "Xem thêm" */}
+          {hasMore && (
+            <div className="load-more-wrapper">
+              <button
+                className="load-more-btn"
+                onClick={handleLoadMore}
+                disabled={loading}
+              >
+                {loading ? 'Đang tải...' : (
+                  <>
+                    Xem thêm
+                    <span className="load-more-icon"> ↓ ↓ ↓</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       {isModalOpen && selectedOrder && (

@@ -1,0 +1,127 @@
+/* Bottom Navigation Bar */
+.bottom-nav {
+    display: none; /* Ẩn mặc định trên desktop và tablet */
+    position: relative; /* Để định vị pseudo-element */
+  }
+  
+  /* Thêm pseudo-element để tạo hiệu ứng uốn lượn tròn */
+  .bottom-nav::before {
+    content: '';
+    position: absolute;
+    top: -33px; /* Đặt vị trí để ôm sát mục "Tạo đơn" (tính cả viền trắng 8px) */
+    left: 50%; /* Đặt ở giữa BottomNav */
+    transform: translateX(-50%); /* Căn giữa */
+    width: 66px; /* Kích thước lớn hơn mục "Tạo đơn" (50px + 8px viền trắng x 2) */
+    height: 66px; /* Kích thước lớn hơn mục "Tạo đơn" (50px + 8px viền trắng x 2) */
+    background-color: white; /* Màu nền khớp với bottom-nav */
+    border-radius: 50%; /* Tạo hình tròn để ôm sát mục "Tạo đơn" */
+    z-index: -1; /* Đặt phía sau bottom-nav */
+  }
+  
+  /* Responsive cho mobile (≤ 767px) */
+  @media (max-width: 767px) {
+    .bottom-nav {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: white;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+      height: 55px;
+      z-index: 1000;
+    }
+  
+    .bottom-nav-item-wrapper {
+      position: relative; /* Để định vị menu dropdown */
+    }
+  
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #666;
+      font-size: 12px;
+      flex: 1;
+    }
+  
+    .bottom-nav-item i {
+      font-size: 20px;
+      margin-bottom: 5px;
+    }
+  
+    .bottom-nav-item span {
+      font-size: 12px;
+    }
+  
+    /* Mục nổi bật (Tạo đơn) */
+    .bottom-nav-item.prominent {
+      position: relative;
+      top: -33px; /* Điều chỉnh để khớp với hình tròn (tính cả viền trắng 8px) */
+      right: 10px;
+      background-color: #007bff; /* Màu xanh giống trong hình */
+      border-radius: 50%;
+      width: 50px;
+      border: 8px solid white; /* Đường viền trắng để tạo hiệu ứng nổi bật */
+      height: 50px;
+      display: flex;
+      flex-direction: column; /* 🔴 Đặt lại thành column để icon và text xếp dọc */
+      justify-content: center;
+      align-items: center;
+      color: white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+  
+    .bottom-nav-item.prominent i {
+      font-size: 24px;
+      margin-bottom: 0; /* Bỏ margin-bottom vì không có text */
+    }
+  
+     .bottom-nav-item.prominent span {
+        position: absolute;
+        bottom: -36px;
+        color: #666;
+        font-size: 15px;
+        font-weight: bold;
+        width: 66px;
+        right: -18px;
+    }
+  
+    .bottom-nav-item:hover {
+      color: #007bff;
+    }
+  
+    /* Menu dropdown cho mục "Tài khoản" */
+    .account-menu {
+      position: absolute;
+      bottom: 70px; /* Hiển thị phía trên mục "Tài khoản" */
+      right: 0;
+      background-color: white;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      width: 200px;
+      z-index: 1001; /* Đảm bảo menu nằm trên các phần tử khác */
+    }
+  
+    .account-menu-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      color: #333;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+  
+    .account-menu-item i {
+      margin-right: 10px;
+      font-size: 16px;
+    }
+  
+    .account-menu-item:hover {
+      background-color: #f5f5f5;
+    }
+  }

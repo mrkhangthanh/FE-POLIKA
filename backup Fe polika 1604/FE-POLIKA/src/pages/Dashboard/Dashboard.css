@@ -1,0 +1,428 @@
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 300px;
+  background: #09325f;
+  color: #f5f5f5;
+  padding: 5px;
+  height: 100vh;
+  overflow-y: auto;
+  transition: width 0.3s, transform 0.3s;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.sidebar-header h2 {
+  font-size: 26px;
+  color: #fff;
+  margin-bottom: 30px;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 8px;
+}
+
+.sidebar-menu li {
+  margin-bottom: 5px;
+  border-radius: 6px;
+  transition: background 0.3s;
+}
+
+.sidebar-menu li span:hover {
+  color: rgb(153, 204, 14);
+}
+
+.sidebar-menu li.active {
+  background: linear-gradient(90deg, #ff8f0036, #9f443a);
+}
+
+/* Căn chỉnh icon và text cho menu chính */
+.sidebar-menu li span {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 5px;
+  border-radius: 6px;
+  font-size: 16px;
+  height: 40px;
+  gap: 10px;
+}
+
+.menu-icon {
+  margin-right: 12px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+}
+
+/* Menu nhóm (có submenu) */
+.menu-group {
+  margin-bottom: 15px;
+}
+
+.menu-group-title {
+  font-size: 12px;
+  color: #eeff0c;
+  padding: 8px 15px;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+/* .menu-group-title:hover {
+  background: #e03e00;
+} */
+
+/* Style cho icon toggle */
+.toggle-icon {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+/* Submenu với animation */
+.submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.submenu.open {
+  max-height: 1000px; /* Đủ lớn để chứa toàn bộ nội dung */
+  transition: max-height 0.3s ease-in-out;
+}
+
+.submenu li {
+  padding: 5px 0;
+}
+
+/* Căn chỉnh icon và text cho submenu */
+.submenu li span {
+  cursor: pointer;
+  padding: 8px 3px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 36px;
+  line-height: 36px;
+}
+
+.submenu-icon {
+  margin-right: 10px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+}
+
+.submenu li.active {
+  background: linear-gradient(90deg, #89462c, #d35324);
+}
+
+/* Nút toggle cho responsive */
+.toggle-sidebar {
+  display: none;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: #ff4500;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.toggle-sidebar:hover {
+  background: #e4ab95;
+}
+
+/* Nội dung chính */
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background: #f5f5f5;
+  margin-left: 300px;
+  transition: margin-left 0.3s;
+}
+
+/* Dashboard.css */
+.content-section {
+  padding: 20px;
+}
+
+.content-section h3 {
+  margin-bottom: 10px;
+}
+
+.content-section table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.content-section th,
+.content-section td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.content-section th {
+  background-color: #f4f4f4;
+}
+
+/* Định nghĩa trạng thái (chỉ định nghĩa 1 lần) */
+.status-active {
+  color: #00c4b4;
+  font-weight: bold;
+}
+
+.status-inactive {
+  color: #ff4500;
+  font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 280px;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .toggle-sidebar {
+    display: block;
+  }
+
+  .sidebar-header h2 {
+    font-size: 22px;
+  }
+
+  .sidebar-menu li span {
+    font-size: 14px;
+    padding: 10px 12px;
+    height: 36px;
+  }
+
+  .submenu li span {
+    font-size: 13px;
+    padding: 8px 30px;
+    height: 32px;
+    line-height: 32px;
+  }
+
+  .menu-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .submenu-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+  }
+
+  .toggle-icon {
+    font-size: 10px;
+  }
+}
+
+/* Các phần còn lại */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h2 {
+  font-size: 24px;
+  color: #ff4500;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-info button {
+  background: #ff4500;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.user-info button:hover {
+  background: #e03e00;
+}
+
+/* Thống kê tổng quan */
+.stats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.stat-box {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  text-align: center;
+}
+
+.stat-box h3 {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.stat-box p {
+  font-size: 20px;
+  color: #ff4500;
+  font-weight: bold;
+}
+
+/* Biểu đồ */
+.charts {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.chart-box {
+  flex: 2;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.satisfaction-box {
+  flex: 1;
+  background: #e0f7fa;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.satisfaction-box h3 {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.satisfaction-box p {
+  font-size: 24px;
+  color: #00c4b4;
+  font-weight: bold;
+}
+
+/* Thống kê bổ sung */
+.additional-stats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* Danh sách người dùng gần đây */
+.recent-users {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.recent-users h3 {
+  font-size: 18px;
+  color: #ff4500;
+  margin-bottom: 10px;
+}
+
+.recent-users p {
+  margin-bottom: 10px;
+  color: #666;
+}
+
+.recent-users table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.recent-users th,
+.recent-users td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.recent-users th {
+  background: #f5f5f5;
+  font-weight: bold;
+}
+
+/* Style cho nút View và Delete */
+.recent-users button {
+  margin: 0 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+}
+
+.recent-users button:first-child {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.recent-users button:last-child {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Cải thiện style cho thông báo lỗi */
+.error {
+  color: red;
+  margin-bottom: 10px;
+  font-weight: bold;
+}

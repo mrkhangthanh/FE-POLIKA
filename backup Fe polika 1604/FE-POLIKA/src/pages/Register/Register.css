@@ -1,0 +1,237 @@
+.register-container-lg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  background-color: #f5f5f5;
+}
+
+.register-form-lg {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.register-form-lg h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #ff4500;
+}
+
+.input-group-lg {
+  margin-bottom: 15px;
+}
+
+.input-group-lg label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.input-group-lg input,
+.input-group-lg select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.button-lg {
+  text-align: center;
+}
+
+.button-lg button {
+  background-color: #ff4500;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.button-lg button:hover {
+  background-color: #e03e00;
+}
+
+.button-lg button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.login-link-lg {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.login-link-lg a {
+  color: #ff4500;
+  text-decoration: none;
+}
+
+.error-message-lg,
+.success-message-lg {
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Modal styles */
+.modal-overlay-lg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content-lg {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-content-lg h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #ff4500;
+}
+
+.service-options-lg {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.service-checkbox-lg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.modal-actions-lg {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-button-lg {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.modal-button-lg.cancel {
+  background: #ccc;
+  color: #333;
+}
+
+.modal-button-lg.cancel:hover {
+  background: #b3b3b3;
+}
+
+.modal-button-lg.confirm {
+  background-color: #ff4500;
+  color: #fff;
+}
+
+.modal-button-lg.confirm:hover {
+  background-color: #e03e00;
+}
+
+.modal-button-lg.confirm:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+/* Định dạng các section trong modal */
+.modal-section-lg {
+  margin-bottom: 20px;
+}
+
+.modal-section-lg h4 {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #1c63d1;
+}
+
+/* Định dạng phần địa chỉ trong modal */
+.modal-section-lg .input-group-lg {
+  margin-bottom: 10px;
+}
+
+.modal-section-lg .input-group-lg label {
+  font-size: 14px;
+  color: #555;
+}
+
+.modal-section-lg .input-group-lg input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Định dạng checkbox điều khoản trong modal */
+.modal-section-lg.terms-checkbox-lg {
+  display: flex;
+  align-items: center;
+}
+
+.modal-section-lg.terms-checkbox-lg label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #555;
+}
+
+.modal-section-lg.terms-checkbox-lg input {
+  margin-right: 8px;
+}
+
+.modal-section-lg.terms-checkbox-lg a {
+  color: #ff4500;
+  text-decoration: none;
+}
+
+.modal-section-lg.terms-checkbox-lg a:hover {
+  text-decoration: underline;
+}
+/* Định dạng phần chia cột cho lĩnh vực công việc */
+.service-columns-lg {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+.service-column-lg {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.service-column-lg .service-checkbox-lg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
